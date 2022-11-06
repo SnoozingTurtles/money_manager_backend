@@ -1,9 +1,9 @@
 package com.thesnoozingturtle.moneymanagerrestapi.repositories;
 
-import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface IncomeRepo extends JpaRepository<User, Long> {
+public interface IncomeRepo extends JpaRepository<Income, Long> {
 }
