@@ -4,9 +4,9 @@ import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
 import java.util.Set;
 
 public interface IncomeService {
-    IncomeDto addIncome(IncomeDto incomeDto);
-    IncomeDto updateIncome(long incomeId, IncomeDto incomeDto);
-    IncomeDto getIncomeById(long incomeId);
-    Set<IncomeDto> getAllIncomes();
-    void deleteIncome(int incomeId);
+    IncomeDto addIncome(long userId, IncomeDto incomeDto);
+    IncomeDto updateIncome(long userId, long incomeId, IncomeDto incomeDto);
+    IncomeDto getIncomeById(long userId, long incomeId);
+    Set<IncomeDto> getAllIncomes(long userId);
+    void deleteIncome(long userId, long incomeId);
 }
