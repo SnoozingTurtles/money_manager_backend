@@ -3,6 +3,8 @@ package com.thesnoozingturtle.moneymanagerrestapi.controller;
 import com.thesnoozingturtle.moneymanagerrestapi.dto.UserDto;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.ApiResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.service.UserService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +23,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "user controller working fine!";
-    }
-
     @PostMapping("/registerUser")
     public ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto) {
         System.out.println("User Dto:" + userDto);
@@ -34,7 +31,10 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable long userId) {
+    @ApiOperation(value = "Find User by user id",
+                notes = "Provide user id to look up the user from the list of users",
+                response = UserDto.class)
+    public ResponseEntity<UserDto> getUserById(@ApiParam(value = "Enter user id") @PathVariable long userId) {
         UserDto userDto = this.userService.getUserById(userId);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }

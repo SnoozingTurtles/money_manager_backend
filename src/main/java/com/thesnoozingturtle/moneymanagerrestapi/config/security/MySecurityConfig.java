@@ -1,4 +1,4 @@
-package com.thesnoozingturtle.moneymanagerrestapi.security;
+package com.thesnoozingturtle.moneymanagerrestapi.config.security;
 
 import org.springframework.context.annotation.Configuration;
 
