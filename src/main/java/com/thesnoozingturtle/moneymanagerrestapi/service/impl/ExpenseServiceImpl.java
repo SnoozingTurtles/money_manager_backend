@@ -52,6 +52,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         expenseByIdAndUser.setCategory(expenseDto.getCategory());
         expenseByIdAndUser.setDescription(expenseDto.getDescription());
         expenseByIdAndUser.setType(expenseDto.getType());
+        LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
+        expenseByIdAndUser.setDateAdded(ldt);
         Expense updatedExpense = this.expensesRepo.save(expenseByIdAndUser);
         return this.modelMapper.map(updatedExpense, ExpenseDto.class);
     }

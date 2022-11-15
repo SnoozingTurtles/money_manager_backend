@@ -4,13 +4,20 @@ import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import com.thesnoozingturtle.moneymanagerrestapi.exception.UserNotFoundException;
+import com.thesnoozingturtle.moneymanagerrestapi.payload.IncomeResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.IncomeRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.IncomeService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,7 +38,8 @@ public class IncomeServiceImpl implements IncomeService {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
         Income income = this.modelMapper.map(incomeDto, Income.class);
         income.setUser(user);
-        income.setDateAdded(new Date(System.currentTimeMillis()));
+        LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
+        income.setDateAdded(ldt);
         income.setImageName("Default.png");
         Income savedIncome = this.incomeRepo.save(income);
         return this.modelMapper.map(savedIncome, IncomeDto.class);
@@ -44,7 +52,8 @@ public class IncomeServiceImpl implements IncomeService {
         income.setAmount(incomeDto.getAmount());
         income.setDescription(incomeDto.getDescription());
         income.setType(incomeDto.getType());
-        income.setDateAdded(incomeDto.getDateAdded());
+        LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
+        income.setDateAdded(ldt);
         this.incomeRepo.save(income);
         return this.modelMapper.map(income, IncomeDto.class);
     }
@@ -57,13 +66,28 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public Set<IncomeDto> getAllIncomes(long userId) {
+    public IncomeResponse getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
-        Set<Income> incomes = this.incomeRepo.getIncomeByUser(user);
-        Set<IncomeDto> incomeDtos = incomes.stream()
+
+        Sort sort = (sortOrder.equalsIgnoreCase("asc")) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        Page<Income> incomesPage = this.incomeRepo.getIncomeByUser(user, pageable);
+        List<Income> incomes = incomesPage.getContent();
+
+        List<IncomeDto> incomeDtos = incomes.stream()
                 .map(income -> this.modelMapper.map(income, IncomeDto.class))
-                .collect(Collectors.toSet());
-        return incomeDtos;
+                .collect(Collectors.toList());
+
+        IncomeResponse incomeResponse = new IncomeResponse();
+        incomeResponse.setIncomes(incomeDtos);
+        incomeResponse.setLastPage(incomesPage.isLast());
+        incomeResponse.setPageNumber(incomesPage.getNumber());
+        incomeResponse.setTotalElements(incomesPage.getTotalElements());
+        incomeResponse.setTotalPages(incomesPage.getTotalPages());
+        incomeResponse.setNumberOfElementsOnSinglePage(incomesPage.getNumberOfElements());
+
+        return incomeResponse;
     }
 
     @Override
