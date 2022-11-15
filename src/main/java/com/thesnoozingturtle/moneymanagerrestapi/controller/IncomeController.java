@@ -1,15 +1,15 @@
 package com.thesnoozingturtle.moneymanagerrestapi.controller;
 
-import com.thesnoozingturtle.moneymanagerrestapi.dto.ExpenseDto;
+import com.thesnoozingturtle.moneymanagerrestapi.config.AppConstants;
 import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.ApiResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.payload.IncomeResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.service.IncomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
@@ -28,8 +28,12 @@ public class IncomeController {
         return new ResponseEntity<>(income, HttpStatus.CREATED);
     }
     @GetMapping("/user/{userId}/incomes")
-    public ResponseEntity<Set<IncomeDto>> getAllIncomes(@PathVariable long userId) {
-        Set<IncomeDto> incomes = this.incomeService.getAllIncomes(userId);
+    public ResponseEntity<IncomeResponse> getAllIncomes(@PathVariable long userId,
+                                                        @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
+                                                        @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) int pageSize,
+                                                        @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY, required = false) String sortBy,
+                                                        @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER, required = false) String sortOrder) {
+        IncomeResponse incomes = this.incomeService.getAllIncomes(userId, pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<>(incomes, HttpStatus.OK);
     }
 

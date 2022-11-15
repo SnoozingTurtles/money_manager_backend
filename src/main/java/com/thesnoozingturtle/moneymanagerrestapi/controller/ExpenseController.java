@@ -1,5 +1,6 @@
 package com.thesnoozingturtle.moneymanagerrestapi.controller;
 
+import com.thesnoozingturtle.moneymanagerrestapi.config.AppConstants;
 import com.thesnoozingturtle.moneymanagerrestapi.dto.ExpenseDto;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.ApiResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.ExpenseResponse;
@@ -29,10 +30,10 @@ public class ExpenseController {
     }
     @GetMapping("/user/{userId}/expenses")
     public ResponseEntity<ExpenseResponse> getAllExpenses(@PathVariable long userId,
-                                                          @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
-                                                          @RequestParam(value = "pageSize", defaultValue = "2", required = false) int pageSize,
-                                                          @RequestParam(value = "sortBy", defaultValue = "id", required = false) String sortBy,
-                                                          @RequestParam(value = "sortOrder", defaultValue = "asc", required = false) String sortOrder) {
+                                                          @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
+                                                          @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) int pageSize,
+                                                          @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY, required = false) String sortBy,
+                                                          @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER, required = false) String sortOrder) {
         ExpenseResponse expenseResponse = this.expenseService.getAllExpenses(userId, pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<>(expenseResponse, HttpStatus.OK);
     }
