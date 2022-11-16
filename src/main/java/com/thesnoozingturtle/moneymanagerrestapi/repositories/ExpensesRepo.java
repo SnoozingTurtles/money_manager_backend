@@ -13,5 +13,6 @@ import java.util.Set;
 public interface ExpensesRepo extends JpaRepository<Expense, Long> {
     Expense getExpenseByIdAndUser(long expenseId, User user);
     Page<Expense> getExpensesByUser(User user, Pageable pageable);
+    Set<Expense> getExpensesByUser(User user);
 
 }

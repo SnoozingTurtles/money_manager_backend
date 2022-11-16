@@ -14,4 +14,5 @@ import java.util.Set;
 public interface IncomeRepo extends JpaRepository<Income, Long> {
     Income getIncomeByIdAndUser(long incomeId, User user);
     Page<Income> getIncomeByUser(User user, Pageable pageable);
+    Set<Income> getIncomeByUser(User user);
 }

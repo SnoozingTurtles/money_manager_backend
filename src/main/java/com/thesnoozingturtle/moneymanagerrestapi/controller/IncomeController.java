@@ -56,4 +56,11 @@ public class IncomeController {
         return new ResponseEntity<>(new ApiResponse("Income with income id " + incomeId + " deleted successfully!", true),
                 HttpStatus.OK);
     }
+
+    @DeleteMapping("/user/{userId}/incomes")
+    public ResponseEntity<ApiResponse> deleteAllIncomes(@PathVariable long userId) {
+        this.incomeService.deleteAllIncomes(userId);
+        return new ResponseEntity<>(new ApiResponse("All incomes of user with user id:" + userId + " deleted successfully!",
+                true), HttpStatus.OK);
+    }
 }

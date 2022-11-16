@@ -10,4 +10,5 @@ public interface ExpenseService {
     ExpenseDto getExpenseById(long userId, long expenseId);
     ExpenseResponse getAllExpenses(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
     void deleteExpense(long userId, long expenseId);
+    void deleteAllExpenses(long userId);
 }
