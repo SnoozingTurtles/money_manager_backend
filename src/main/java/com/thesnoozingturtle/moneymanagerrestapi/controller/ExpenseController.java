@@ -57,4 +57,11 @@ public class ExpenseController {
         return new ResponseEntity<>(new ApiResponse("Expense with expense id " + expenseId + " deleted successfully!", true),
                 HttpStatus.OK);
     }
+
+    @DeleteMapping("/user/{userId}/expenses")
+    public ResponseEntity<ApiResponse> deleteAllExpenses(@PathVariable long userId) {
+        this.expenseService.deleteAllExpenses(userId);
+        return new ResponseEntity<>(new ApiResponse("All expenses of user with user id:" + userId + " deleted successfully!",
+                true), HttpStatus.OK);
+    }
 }

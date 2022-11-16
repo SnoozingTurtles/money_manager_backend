@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,5 +93,12 @@ public class ExpenseServiceImpl implements ExpenseService {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
         Expense expense = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
         this.expensesRepo.delete(expense);
+    }
+
+    @Override
+    public void deleteAllExpenses(long userId) {
+        User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
+        Set<Expense> expenses = this.expensesRepo.getExpensesByUser(user);
+        this.expensesRepo.deleteAll(expenses);
     }
 }

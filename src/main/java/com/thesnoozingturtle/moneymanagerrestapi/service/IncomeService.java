@@ -11,4 +11,5 @@ public interface IncomeService {
     IncomeDto getIncomeById(long userId, long incomeId);
     IncomeResponse getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
     void deleteIncome(long userId, long incomeId);
+    void deleteAllIncomes(long userId);
 }

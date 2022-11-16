@@ -96,4 +96,11 @@ public class IncomeServiceImpl implements IncomeService {
         Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
         this.incomeRepo.delete(incomeById);
     }
+
+    @Override
+    public void deleteAllIncomes(long userId) {
+        User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
+        Set<Income> incomes = this.incomeRepo.getIncomeByUser(user);
+        this.incomeRepo.deleteAll(incomes);
+    }
 }
