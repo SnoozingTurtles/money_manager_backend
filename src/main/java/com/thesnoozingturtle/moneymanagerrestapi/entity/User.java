@@ -17,10 +17,16 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(nullable = false, length = 30)
     private String name;
+
+    @Column(nullable = false, length = 25)
     private String password;
+
+    @Column(nullable = false)
     private String email;
-    private long balance;
+    private String balance;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Set<Expense> expenses = new HashSet<>();
