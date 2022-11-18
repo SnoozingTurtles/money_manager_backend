@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api")
@@ -24,7 +26,7 @@ public class ExpenseController {
 
     @PostMapping("/user/{userId}/expenses")
     public ResponseEntity<ExpenseDto> addExpense(@PathVariable long userId,
-                                                 @RequestBody ExpenseDto expenseDto) {
+                                                 @Valid @RequestBody ExpenseDto expenseDto) {
         ExpenseDto addedExpense = this.expenseService.addExpense(expenseDto, userId);
         return new ResponseEntity<>(addedExpense, HttpStatus.CREATED);
     }
@@ -46,7 +48,7 @@ public class ExpenseController {
 
     @PutMapping("/user/{userId}/expenses/{expenseId}")
     public ResponseEntity<ExpenseDto> updateExpense(@PathVariable long userId, @PathVariable long expenseId,
-                                                    @RequestBody ExpenseDto expenseDto) {
+                                                    @Valid @RequestBody ExpenseDto expenseDto) {
         ExpenseDto updateExpense = this.expenseService.updateExpense(userId, expenseId, expenseDto);
         return new ResponseEntity<>(updateExpense, HttpStatus.OK);
     }

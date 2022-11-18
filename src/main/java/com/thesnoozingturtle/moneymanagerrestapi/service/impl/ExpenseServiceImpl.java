@@ -37,10 +37,12 @@ public class ExpenseServiceImpl implements ExpenseService {
     public ExpenseDto addExpense(ExpenseDto expenseDto, long userId) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
         Expense expense = this.modelMapper.map(expenseDto, Expense.class);
+        user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) - Double.parseDouble(expense.getAmount())));
         expense.setUser(user);
         LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
         expense.setDateAdded(ldt);
         expense.setImageName("Default.png");
+        this.userRepo.save(user);
         Expense savedExpense = this.expensesRepo.save(expense);
         return this.modelMapper.map(savedExpense, ExpenseDto.class);
     }
@@ -49,6 +51,15 @@ public class ExpenseServiceImpl implements ExpenseService {
     public ExpenseDto updateExpense(long userId, long expenseId, ExpenseDto expenseDto) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
         Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
+
+        //to update the balance in user table
+        double prevExpenseAmount = Double.parseDouble(expenseByIdAndUser.getAmount());
+        double prevBalance = Double.parseDouble(user.getBalance());
+        double newBalance = prevBalance + prevExpenseAmount - Double.parseDouble(expenseDto.getAmount());
+        user.setBalance(String.valueOf(newBalance));
+        this.userRepo.save(user);
+
+        //updating all the fields
         expenseByIdAndUser.setAmount(expenseDto.getAmount());
         expenseByIdAndUser.setCategory(expenseDto.getCategory());
         expenseByIdAndUser.setDescription(expenseDto.getDescription());
@@ -56,6 +67,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
         expenseByIdAndUser.setDateAdded(ldt);
         Expense updatedExpense = this.expensesRepo.save(expenseByIdAndUser);
+
         return this.modelMapper.map(updatedExpense, ExpenseDto.class);
     }
 

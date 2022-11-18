@@ -18,10 +18,16 @@ public class Income {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(length = 150)
     private String description;
     private String type;
-    private long amount;
+
+    @Column(nullable = false)
+    private String amount;
     private String imageName;
+
+    @Column(nullable = false)
     private LocalDateTime dateAdded;
 
     @ManyToOne

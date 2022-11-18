@@ -28,6 +28,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto registerNewUser(UserDto userDto) {
+        userDto.setBalance("0");
         User user = this.modelMapper.map(userDto, User.class);
         User savedUser = this.userRepo.save(user);
         return this.modelMapper.map(savedUser, UserDto.class);

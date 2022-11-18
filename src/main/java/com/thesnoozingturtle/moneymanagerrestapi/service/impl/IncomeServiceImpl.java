@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -37,11 +36,13 @@ public class IncomeServiceImpl implements IncomeService {
     public IncomeDto addIncome(long userId, IncomeDto incomeDto) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
         Income income = this.modelMapper.map(incomeDto, Income.class);
+        user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) + Double.parseDouble(income.getAmount())));
         income.setUser(user);
         LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
         income.setDateAdded(ldt);
         income.setImageName("Default.png");
         Income savedIncome = this.incomeRepo.save(income);
+        this.userRepo.save(user);
         return this.modelMapper.map(savedIncome, IncomeDto.class);
     }
 
@@ -49,6 +50,14 @@ public class IncomeServiceImpl implements IncomeService {
     public IncomeDto updateIncome(long userId, long incomeId, IncomeDto incomeDto) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
         Income income = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+
+        //to update the balance in user table
+        double prevIncomeAmount = Double.parseDouble(income.getAmount());
+        double prevBalance = Double.parseDouble(user.getBalance());
+        double newBalance = prevBalance - prevIncomeAmount + Double.parseDouble(incomeDto.getAmount());
+        user.setBalance(String.valueOf(newBalance));
+        this.userRepo.save(user);
+
         income.setAmount(incomeDto.getAmount());
         income.setDescription(incomeDto.getDescription());
         income.setType(incomeDto.getType());
