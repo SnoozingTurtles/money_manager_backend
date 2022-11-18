@@ -33,7 +33,7 @@ public class UserDto {
     private String password;
 
     @JsonIgnore
-    private long balance;
+    private String balance;
 
     @JsonIgnore
     Set<Expense> expenses = new HashSet<>();
