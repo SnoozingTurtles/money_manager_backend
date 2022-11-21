@@ -4,7 +4,7 @@ import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import com.thesnoozingturtle.moneymanagerrestapi.exception.UserNotFoundException;
-import com.thesnoozingturtle.moneymanagerrestapi.payload.IncomeResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.IncomeRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.IncomeService;
@@ -75,28 +75,17 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public IncomeResponse getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<IncomeDto, Income> getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
-
         Sort sort = (sortOrder.equalsIgnoreCase("asc")) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
-
         Page<Income> incomesPage = this.incomeRepo.getIncomeByUser(user, pageable);
         List<Income> incomes = incomesPage.getContent();
-
         List<IncomeDto> incomeDtos = incomes.stream()
                 .map(income -> this.modelMapper.map(income, IncomeDto.class))
                 .collect(Collectors.toList());
-
-        IncomeResponse incomeResponse = new IncomeResponse();
-        incomeResponse.setIncomes(incomeDtos);
-        incomeResponse.setLastPage(incomesPage.isLast());
-        incomeResponse.setPageNumber(incomesPage.getNumber());
-        incomeResponse.setTotalElements(incomesPage.getTotalElements());
-        incomeResponse.setTotalPages(incomesPage.getTotalPages());
-        incomeResponse.setNumberOfElementsOnSinglePage(incomesPage.getNumberOfElements());
-
-        return incomeResponse;
+        PaginationResponse<IncomeDto, Income> paginationResponse = new PaginationResponse<>(incomesPage, incomeDtos);
+        return paginationResponse;
     }
 
     @Override
