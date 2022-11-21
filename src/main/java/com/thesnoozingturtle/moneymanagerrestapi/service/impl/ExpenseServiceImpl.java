@@ -4,7 +4,7 @@ import com.thesnoozingturtle.moneymanagerrestapi.dto.ExpenseDto;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Expense;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import com.thesnoozingturtle.moneymanagerrestapi.exception.UserNotFoundException;
-import com.thesnoozingturtle.moneymanagerrestapi.payload.ExpenseResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.ExpensesRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.ExpenseService;
@@ -84,12 +84,12 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to get all the expenses of a user
     @Override
-    public ExpenseResponse getAllExpenses(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<ExpenseDto, Expense> getAllExpenses(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
         Page<Expense> expensePage = this.expensesRepo.getExpensesByUser(user, pageable);
-        ExpenseResponse expenseResponse = getExpenseResponse(expensePage);
-        return expenseResponse;
+        PaginationResponse<ExpenseDto, Expense> paginationResponse = getExpenseResponse(expensePage);
+        return paginationResponse;
     }
 
     //Method to delete an expense of a user by expense id
@@ -121,7 +121,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to get expenses between a particular date
     @Override
-    public ExpenseResponse getAllExpensesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<ExpenseDto, Expense> getAllExpensesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         LocalDateTime startDate = LocalDateTime.parse(startDateStr);
         LocalDateTime endDate;
@@ -132,8 +132,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         }
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
         Page<Expense> expensePage = this.expensesRepo.getExpensesByDateAddedBetweenAndUser(startDate, endDate, user, pageable);
-        ExpenseResponse expenseResponse = getExpenseResponse(expensePage);
-        return expenseResponse;
+        PaginationResponse<ExpenseDto, Expense> paginationResponse = getExpenseResponse(expensePage);
+        return paginationResponse;
     }
 
     //Get the user from userId
@@ -150,20 +150,14 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     //Generate an object of ExpenseResponse
-    private ExpenseResponse getExpenseResponse(Page<Expense> expensePage) {
+    private PaginationResponse<ExpenseDto, Expense> getExpenseResponse(Page<Expense> expensePage) {
         List<Expense> expensesByUser = expensePage.getContent();
         List<ExpenseDto> allExpenses = expensesByUser
                 .stream()
                 .map(expense -> this.modelMapper.map(expense, ExpenseDto.class))
                 .collect(Collectors.toList());
 
-        ExpenseResponse expenseResponse = new ExpenseResponse();
-        expenseResponse.setExpenses(allExpenses);
-        expenseResponse.setLastPage(expensePage.isLast());
-        expenseResponse.setPageNumber(expensePage.getNumber());
-        expenseResponse.setTotalElements(expensePage.getTotalElements());
-        expenseResponse.setTotalPages(expensePage.getTotalPages());
-        expenseResponse.setNumberOfElementsOnSinglePage(expensePage.getNumberOfElements());
-        return expenseResponse;
+        PaginationResponse<ExpenseDto, Expense> paginationResponse = new PaginationResponse<>(expensePage, allExpenses);
+        return paginationResponse;
     }
 }
