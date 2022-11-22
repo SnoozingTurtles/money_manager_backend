@@ -52,6 +52,14 @@ public class ExpenseController {
         return new ResponseEntity<>(paginationResponse, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{userId}/month/{month}/year/{year}/expenses")
+    public ResponseEntity<Set<ExpenseDto>> getAllExpensesByMonthAndYear(@PathVariable long userId,
+                                                                        @PathVariable int month,
+                                                                        @PathVariable int year) {
+        Set<ExpenseDto> allExpensesOfLastMonth = this.expenseService.getAllExpensesByMonthAndYear(userId, month, year);
+        return new ResponseEntity<>(allExpensesOfLastMonth, HttpStatus.OK);
+    }
+
     @GetMapping("/user/{userId}/expenses/{expenseId}")
     public ResponseEntity<ExpenseDto> getSingleExpense(@PathVariable long userId, @PathVariable long expenseId) {
         ExpenseDto expenseById = this.expenseService.getExpenseById(userId, expenseId);
@@ -79,11 +87,4 @@ public class ExpenseController {
                 true), HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/month/{month}/year/{year}/expenses")
-    public ResponseEntity<Set<ExpenseDto>> getAllExpensesByMonthAndYear(@PathVariable long userId,
-                                                                        @PathVariable int month,
-                                                                        @PathVariable int year) {
-        Set<ExpenseDto> allExpensesOfLastMonth = this.expenseService.getAllExpensesByMonthAndYear(userId, month, year);
-        return new ResponseEntity<>(allExpensesOfLastMonth, HttpStatus.OK);
-    }
 }
