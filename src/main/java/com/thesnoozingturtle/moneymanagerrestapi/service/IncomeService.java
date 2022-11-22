@@ -13,4 +13,6 @@ public interface IncomeService {
     PaginationResponse<IncomeDto, Income> getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
     void deleteIncome(long userId, long incomeId);
     void deleteAllIncomes(long userId);
+    Set<IncomeDto> getAllIncomesByMonthAndYear(long userId, int month, int year);
+    PaginationResponse<IncomeDto, Income> getAllIncomesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
 }

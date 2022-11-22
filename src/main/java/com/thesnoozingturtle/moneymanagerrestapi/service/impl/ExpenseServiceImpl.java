@@ -88,7 +88,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         User user = getUser(userId);
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
         Page<Expense> expensePage = this.expensesRepo.getExpensesByUser(user, pageable);
-        PaginationResponse<ExpenseDto, Expense> paginationResponse = getExpenseResponse(expensePage);
+        PaginationResponse<ExpenseDto, Expense> paginationResponse = getPaginationResponse(expensePage);
         return paginationResponse;
     }
 
@@ -119,7 +119,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         return expenseDtos;
     }
 
-    //Method to get expenses between a particular date
+    //Method to get expenses by providing a particular month and year
     @Override
     public PaginationResponse<ExpenseDto, Expense> getAllExpensesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
@@ -132,7 +132,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         }
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
         Page<Expense> expensePage = this.expensesRepo.getExpensesByDateAddedBetweenAndUser(startDate, endDate, user, pageable);
-        PaginationResponse<ExpenseDto, Expense> paginationResponse = getExpenseResponse(expensePage);
+        PaginationResponse<ExpenseDto, Expense> paginationResponse = getPaginationResponse(expensePage);
         return paginationResponse;
     }
 
@@ -149,8 +149,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         return pageable;
     }
 
-    //Generate an object of ExpenseResponse
-    private PaginationResponse<ExpenseDto, Expense> getExpenseResponse(Page<Expense> expensePage) {
+    //Generate an object of PaginationResponse
+    private PaginationResponse<ExpenseDto, Expense> getPaginationResponse(Page<Expense> expensePage) {
         List<Expense> expensesByUser = expensePage.getContent();
         List<ExpenseDto> allExpenses = expensesByUser
                 .stream()
