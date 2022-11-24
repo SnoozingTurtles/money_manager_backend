@@ -2,8 +2,9 @@ package com.thesnoozingturtle.moneymanagerrestapi.controller;
 
 import com.thesnoozingturtle.moneymanagerrestapi.config.AppConstants;
 import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.ApiResponse;
-import com.thesnoozingturtle.moneymanagerrestapi.payload.IncomeResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.service.IncomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Set;
 
 
 @RestController
@@ -30,13 +32,30 @@ public class IncomeController {
         return new ResponseEntity<>(income, HttpStatus.CREATED);
     }
     @GetMapping("/user/{userId}/incomes")
-    public ResponseEntity<IncomeResponse> getAllIncomes(@PathVariable long userId,
-                                                        @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
-                                                        @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) int pageSize,
-                                                        @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY, required = false) String sortBy,
-                                                        @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER, required = false) String sortOrder) {
-        IncomeResponse incomes = this.incomeService.getAllIncomes(userId, pageNumber, pageSize, sortBy, sortOrder);
-        return new ResponseEntity<>(incomes, HttpStatus.OK);
+    public ResponseEntity<PaginationResponse<IncomeDto, Income>> getAllIncomes(@PathVariable long userId,
+                                                                               @RequestParam(value = "startDate", required = false) String startDateStr,
+                                                                               @RequestParam(value = "endDate", required = false) String endDateStr,
+                                                                               @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
+                                                                               @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) int pageSize,
+                                                                               @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY, required = false) String sortBy,
+                                                                               @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER, required = false) String sortOrder) {
+        PaginationResponse<IncomeDto, Income> paginationResponse;
+        if (startDateStr == null || startDateStr.isEmpty()) {
+            paginationResponse = this.incomeService.getAllIncomes(userId, pageNumber, pageSize, sortBy, sortOrder);
+        } else if(endDateStr != null) {
+            paginationResponse = this.incomeService.getAllIncomesBetweenAParticularDate(startDateStr, endDateStr, userId, pageNumber, pageSize, sortBy, sortOrder);
+        } else {
+            paginationResponse = this.incomeService.getAllIncomesBetweenAParticularDate(startDateStr, null, userId, pageNumber, pageSize, sortBy, sortOrder);
+        }
+        return new ResponseEntity<>(paginationResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}/month/{month}/year/{year}/incomes")
+    public ResponseEntity<Set<IncomeDto>> getAllIncomesByMonthAndYear(@PathVariable long userId,
+                                                                        @PathVariable int month,
+                                                                        @PathVariable int year) {
+        Set<IncomeDto> allIncomesByMonthAndYear = this.incomeService.getAllIncomesByMonthAndYear(userId, month, year);
+        return new ResponseEntity<>(allIncomesByMonthAndYear, HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}/incomes/{incomeId}")
