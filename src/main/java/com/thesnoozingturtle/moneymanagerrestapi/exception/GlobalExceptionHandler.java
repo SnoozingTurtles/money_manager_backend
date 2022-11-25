@@ -32,4 +32,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    //Catches the Login exception
+    @ExceptionHandler(LoginException.class)
+    public ResponseEntity<ApiResponse> loginExceptionHandler(LoginException exception) {
+        String message = exception.getMessage();
+        ApiResponse apiResponse = new ApiResponse(message, false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.UNAUTHORIZED);
+    }
 }
