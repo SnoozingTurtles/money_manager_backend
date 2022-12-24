@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -46,6 +47,7 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
+    @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<UserDto> updateUser(@PathVariable int userId,
                                               @Valid @RequestBody UserDto userDto) {
         UserDto updatedUser = this.userService.updateUser(userId, userDto);

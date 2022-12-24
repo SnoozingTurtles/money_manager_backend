@@ -3,11 +3,12 @@ package com.thesnoozingturtle.moneymanagerrestapi.service.impl;
 import com.thesnoozingturtle.moneymanagerrestapi.dto.ExpenseDto;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Expense;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
-import com.thesnoozingturtle.moneymanagerrestapi.exception.UserNotFoundException;
+import com.thesnoozingturtle.moneymanagerrestapi.exception.EntityNotFoundException;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.ExpensesRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.ExpenseService;
+import com.thesnoozingturtle.moneymanagerrestapi.service.ImageService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,24 +28,29 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final ExpensesRepo expensesRepo;
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
+    private final ImageService imageService;
 
     @Autowired
-    public ExpenseServiceImpl(ExpensesRepo expensesRepo, UserRepo userRepo, ModelMapper modelMapper) {
+    public ExpenseServiceImpl(ExpensesRepo expensesRepo, UserRepo userRepo, ModelMapper modelMapper, ImageService imageService) {
         this.expensesRepo = expensesRepo;
         this.userRepo = userRepo;
         this.modelMapper = modelMapper;
+        this.imageService = imageService;
     }
 
     //Method to add expense for a particular user
     @Override
-    public ExpenseDto addExpense(ExpenseDto expenseDto, long userId) {
+    public ExpenseDto addExpense(ExpenseDto expenseDto, long userId, MultipartFile image) {
         User user = getUser(userId);
         Expense expense = this.modelMapper.map(expenseDto, Expense.class);
         user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) - Double.parseDouble(expense.getAmount())));
         expense.setUser(user);
         LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
         expense.setDateAdded(ldt);
-        expense.setImageName("Default.png");
+
+        //Uploading image
+        String imageName = imageService.uploadImage(image);
+        expense.setImageName(imageName);
         this.userRepo.save(user);
         Expense savedExpense = this.expensesRepo.save(expense);
         return this.modelMapper.map(savedExpense, ExpenseDto.class);
@@ -51,35 +58,46 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to update expense for a particular user
     @Override
-    public ExpenseDto updateExpense(long userId, long expenseId, ExpenseDto expenseDto) {
+    public ExpenseDto updateExpense(long userId, long expenseId, ExpenseDto expenseDto, MultipartFile image) {
         User user = getUser(userId);
         Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
 
-        //to update the balance in user table
-        double prevExpenseAmount = Double.parseDouble(expenseByIdAndUser.getAmount());
-        double prevBalance = Double.parseDouble(user.getBalance());
-        double newBalance = prevBalance + prevExpenseAmount - Double.parseDouble(expenseDto.getAmount());
-        user.setBalance(String.valueOf(newBalance));
-        this.userRepo.save(user);
+        try {
+            //to update the balance in user table
+            double prevExpenseAmount = Double.parseDouble(expenseByIdAndUser.getAmount());
+            double prevBalance = Double.parseDouble(user.getBalance());
+            double newBalance = prevBalance + prevExpenseAmount - Double.parseDouble(expenseDto.getAmount());
+            user.setBalance(String.valueOf(newBalance));
+            this.userRepo.save(user);
 
-        //updating all the fields
-        expenseByIdAndUser.setAmount(expenseDto.getAmount());
-        expenseByIdAndUser.setCategory(expenseDto.getCategory());
-        expenseByIdAndUser.setDescription(expenseDto.getDescription());
-        expenseByIdAndUser.setType(expenseDto.getType());
-        LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
-        expenseByIdAndUser.setDateAdded(ldt);
-        Expense updatedExpense = this.expensesRepo.save(expenseByIdAndUser);
-
-        return this.modelMapper.map(updatedExpense, ExpenseDto.class);
+            //updating all the fields
+            expenseByIdAndUser.setAmount(expenseDto.getAmount());
+            expenseByIdAndUser.setCategory(expenseDto.getCategory());
+            expenseByIdAndUser.setDescription(expenseDto.getDescription());
+            expenseByIdAndUser.setType(expenseDto.getType());
+            LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
+            expenseByIdAndUser.setDateAdded(ldt);
+            if (image != null) {
+                String imageName = imageService.uploadImage(image);
+                expenseByIdAndUser.setImageName(imageName);
+            }
+            Expense updatedExpense = this.expensesRepo.save(expenseByIdAndUser);
+            return this.modelMapper.map(updatedExpense, ExpenseDto.class);
+        }  catch (Exception e) {
+            throw new EntityNotFoundException("No expense found for the given ID!");
+        }
     }
 
     //Method to get an expense by its id for a particular user
     @Override
     public ExpenseDto getExpenseById(long userId, long expenseId) {
         User user = getUser(userId);
-        Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
-        return this.modelMapper.map(expenseByIdAndUser, ExpenseDto.class);
+        try {
+            Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
+            return this.modelMapper.map(expenseByIdAndUser, ExpenseDto.class);
+        }  catch (Exception e) {
+            throw new EntityNotFoundException("No expense found for the given ID!");
+        }
     }
 
     //Method to get all the expenses of a user
@@ -96,8 +114,12 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public void deleteExpense(long userId, long expenseId) {
         User user = getUser(userId);
-        Expense expense = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
-        this.expensesRepo.delete(expense);
+        try {
+            Expense expense = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
+            this.expensesRepo.delete(expense);
+        }  catch (Exception e) {
+            throw new EntityNotFoundException("No expense found for the given ID!");
+        }
     }
 
     //Method to delete all the expenses of a user
@@ -138,7 +160,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Get the user from userId
     private User getUser(long userId) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
+        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
         return user;
     }
 
