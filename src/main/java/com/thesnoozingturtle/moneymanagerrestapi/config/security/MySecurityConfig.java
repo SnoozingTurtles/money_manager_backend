@@ -2,6 +2,7 @@ package com.thesnoozingturtle.moneymanagerrestapi.config.security;
 
 import com.thesnoozingturtle.moneymanagerrestapi.config.security.jwtutil.JwtAuthenticationEntryPoint;
 import com.thesnoozingturtle.moneymanagerrestapi.config.security.jwtutil.JwtAuthenticationFilter;
+import com.thesnoozingturtle.moneymanagerrestapi.exception.MyAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MySecurityConfig {
 
     private final UserDetailsService userDetailsService;
@@ -29,13 +32,15 @@ public class MySecurityConfig {
             "/api/users/registerUser",
             "/api/auth/**"
     };
+    private final MyAccessDeniedHandler myAccessDeniedHandler;
 
     @Autowired
     public MySecurityConfig(UserDetailsService userDetailsService, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-                            JwtAuthenticationFilter jwtAuthenticationFilter) {
+                            JwtAuthenticationFilter jwtAuthenticationFilter, MyAccessDeniedHandler myAccessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.myAccessDeniedHandler = myAccessDeniedHandler;
     }
     private DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
@@ -60,7 +65,8 @@ public class MySecurityConfig {
                 .anyRequest()
                 .authenticated()
                 .and()
-                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .exceptionHandling().accessDeniedHandler(myAccessDeniedHandler)
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .and()
                                 .sessionManagement()
                                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

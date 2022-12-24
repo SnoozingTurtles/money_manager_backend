@@ -3,10 +3,11 @@ package com.thesnoozingturtle.moneymanagerrestapi.service.impl;
 import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
-import com.thesnoozingturtle.moneymanagerrestapi.exception.UserNotFoundException;
+import com.thesnoozingturtle.moneymanagerrestapi.exception.EntityNotFoundException;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.IncomeRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
+import com.thesnoozingturtle.moneymanagerrestapi.service.ImageService;
 import com.thesnoozingturtle.moneymanagerrestapi.service.IncomeService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,51 +28,66 @@ public class IncomeServiceImpl implements IncomeService {
     private final UserRepo userRepo;
     private final IncomeRepo incomeRepo;
     private final ModelMapper modelMapper;
-    public IncomeServiceImpl(UserRepo userRepo, IncomeRepo incomeRepo, ModelMapper modelMapper) {
+    private final ImageService imageService;
+    public IncomeServiceImpl(UserRepo userRepo, IncomeRepo incomeRepo, ModelMapper modelMapper, ImageService imageService) {
         this.userRepo = userRepo;
         this.incomeRepo = incomeRepo;
         this.modelMapper = modelMapper;
+        this.imageService = imageService;
     }
     @Override
-    public IncomeDto addIncome(long userId, IncomeDto incomeDto) {
+    public IncomeDto addIncome(long userId, IncomeDto incomeDto, MultipartFile image) {
         User user = getUser(userId);
         Income income = this.modelMapper.map(incomeDto, Income.class);
         user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) + Double.parseDouble(income.getAmount())));
         income.setUser(user);
         LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
         income.setDateAdded(ldt);
-        income.setImageName("Default.png");
+        //Uploading image
+        String imageName = imageService.uploadImage(image);
+        income.setImageName(imageName);
         Income savedIncome = this.incomeRepo.save(income);
         this.userRepo.save(user);
         return this.modelMapper.map(savedIncome, IncomeDto.class);
     }
 
     @Override
-    public IncomeDto updateIncome(long userId, long incomeId, IncomeDto incomeDto) {
+    public IncomeDto updateIncome(long userId, long incomeId, IncomeDto incomeDto, MultipartFile image) {
         User user = getUser(userId);
-        Income income = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+        try {
+            Income income = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+            //to update the balance in user table
+            double prevIncomeAmount = Double.parseDouble(income.getAmount());
+            double prevBalance = Double.parseDouble(user.getBalance());
+            double newBalance = prevBalance - prevIncomeAmount + Double.parseDouble(incomeDto.getAmount());
+            user.setBalance(String.valueOf(newBalance));
+            this.userRepo.save(user);
 
-        //to update the balance in user table
-        double prevIncomeAmount = Double.parseDouble(income.getAmount());
-        double prevBalance = Double.parseDouble(user.getBalance());
-        double newBalance = prevBalance - prevIncomeAmount + Double.parseDouble(incomeDto.getAmount());
-        user.setBalance(String.valueOf(newBalance));
-        this.userRepo.save(user);
-
-        income.setAmount(incomeDto.getAmount());
-        income.setDescription(incomeDto.getDescription());
-        income.setType(incomeDto.getType());
-        LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
-        income.setDateAdded(ldt);
-        this.incomeRepo.save(income);
-        return this.modelMapper.map(income, IncomeDto.class);
+            income.setAmount(incomeDto.getAmount());
+            income.setDescription(incomeDto.getDescription());
+            income.setType(incomeDto.getType());
+            LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
+            income.setDateAdded(ldt);
+            if (image != null) {
+                String imageName = imageService.uploadImage(image);
+                income.setImageName(imageName);
+            }
+            this.incomeRepo.save(income);
+            return this.modelMapper.map(income, IncomeDto.class);
+        } catch(Exception e) {
+            throw new EntityNotFoundException("No income found for the given ID!");
+        }
     }
 
     @Override
     public IncomeDto getIncomeById(long userId, long incomeId) {
         User user = getUser(userId);
-        Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
-        return this.modelMapper.map(incomeById, IncomeDto.class);
+        try {
+            Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+            return this.modelMapper.map(incomeById, IncomeDto.class);
+        }  catch (Exception e) {
+            throw new EntityNotFoundException("No income found for the given ID!");
+        }
     }
 
     @Override
@@ -85,8 +102,12 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     public void deleteIncome(long userId, long incomeId) {
         User user = getUser(userId);
-        Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
-        this.incomeRepo.delete(incomeById);
+        try {
+            Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+            this.incomeRepo.delete(incomeById);
+        } catch (Exception e) {
+            throw new EntityNotFoundException("No income found for the given ID!");
+        }
     }
 
     @Override
@@ -126,7 +147,7 @@ public class IncomeServiceImpl implements IncomeService {
 
     //Get the user from userId
     private User getUser(long userId) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new UserNotFoundException("No user exists with the given id!"));
+        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
         return user;
     }
 

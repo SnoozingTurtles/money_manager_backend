@@ -19,6 +19,9 @@ import java.util.Set;
 @AllArgsConstructor
 public class UserDto {
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private long id;
+
     @NotEmpty(message = "Name cannot be empty")
     @Size(min = 2, max = 30, message = "Name must be between 2 - 30 characters long")
     private String name;
