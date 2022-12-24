@@ -1,9 +1,11 @@
 package com.thesnoozingturtle.moneymanagerrestapi.controller;
 
 import com.thesnoozingturtle.moneymanagerrestapi.config.security.jwtutil.JwtTokenHelper;
+import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import com.thesnoozingturtle.moneymanagerrestapi.exception.LoginException;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.JwtAuthRequest;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.JwtAuthResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,22 +24,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
+    private final UserRepo userRepo;
     private final JwtTokenHelper jwtTokenHelper;
 
     @Autowired
-    public AuthController(UserDetailsService userDetailsService, AuthenticationManager authenticationManager, JwtTokenHelper jwtTokenHelper) {
+    public AuthController(UserDetailsService userDetailsService, AuthenticationManager authenticationManager, UserRepo userRepo, JwtTokenHelper jwtTokenHelper) {
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
+        this.userRepo = userRepo;
         this.jwtTokenHelper = jwtTokenHelper;
     }
 
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> generateToken(@RequestBody JwtAuthRequest jwtAuthRequest) {
-        System.out.println(jwtAuthRequest);
         this.authenticate(jwtAuthRequest.getEmail(), jwtAuthRequest.getPassword());
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(jwtAuthRequest.getEmail());
         String jwtToken = this.jwtTokenHelper.generateToken(userDetails);
-        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(jwtToken);
+
+        //Fetching user to send user Id in response
+        User user = this.userRepo.findByEmail(jwtAuthRequest.getEmail());
+        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(jwtToken, user.getId());
         return new ResponseEntity<>(jwtAuthResponse, HttpStatus.OK);
     }
 
@@ -47,7 +53,7 @@ public class AuthController {
         try {
             this.authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         } catch (BadCredentialsException e) {
-            throw new LoginException("Invalid username or password");
+            throw new LoginException("Invalid email or password");
         }
     }
 }
