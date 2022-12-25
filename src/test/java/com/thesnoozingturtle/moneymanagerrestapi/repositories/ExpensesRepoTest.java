@@ -31,7 +31,7 @@ class ExpensesRepoTest {
         LocalDateTime dateAdded = LocalDateTime.parse("2022-12-08T12:39:21.239");
         String email = "abc@gmail.com";
         String imageName = "default.png";
-        User user = new User(1, "Test", "abc", email, null, null, null);
+        User user = new User(1, "Test", "abc", email, null, null, null, null, null);
         User savedUser = this.userRepo.save(user);
         Expense savedExpense = this.expensesRepo.save(new Expense(1, description, category, type, amount, imageName, dateAdded, user));
 

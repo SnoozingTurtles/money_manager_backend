@@ -1,5 +1,6 @@
 package com.thesnoozingturtle.moneymanagerrestapi.config.security.jwtutil;
 
+import com.thesnoozingturtle.moneymanagerrestapi.exception.LoginException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Unable to get JWT token");
             } catch (ExpiredJwtException e) {
-                throw new AccessDeniedException("JWT token has expired");
+//                throw new AccessDeniedException("JWT token has expired");
+                throw new LoginException("JWT token has expired!");
             } catch (MalformedJwtException e) {
                 throw new MalformedJwtException("Invalid jwt");
             }

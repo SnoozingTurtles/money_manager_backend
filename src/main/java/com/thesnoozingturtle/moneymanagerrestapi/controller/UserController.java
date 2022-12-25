@@ -36,12 +36,14 @@ public class UserController {
     @ApiOperation(value = "Find User by user id",
                 notes = "Provide user id to look up the user from the list of users",
                 response = UserDto.class)
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<UserDto> getUserById(@ApiParam(value = "Enter user id") @PathVariable long userId) {
         UserDto userDto = this.userService.getUserById(userId);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
     @GetMapping
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Set<UserDto>> getAllUsers() {
         return new ResponseEntity<>(this.userService.getAllUsers(), HttpStatus.OK);
     }
@@ -55,6 +57,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteUser(@PathVariable long userId) {
         this.userService.deleteUser(userId);
         return new ResponseEntity<>(

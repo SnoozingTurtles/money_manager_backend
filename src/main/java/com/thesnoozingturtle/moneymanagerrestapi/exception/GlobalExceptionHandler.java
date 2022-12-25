@@ -40,4 +40,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.UNAUTHORIZED);
     }
 
+    //Catches the Refresh token exceptions
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<ApiResponse> refreshTokenExceptionHandler(RefreshTokenException refreshTokenException) {
+        String message = refreshTokenException.getMessage();
+        ApiResponse apiResponse = new ApiResponse(message, false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.FORBIDDEN);
+    }
 }

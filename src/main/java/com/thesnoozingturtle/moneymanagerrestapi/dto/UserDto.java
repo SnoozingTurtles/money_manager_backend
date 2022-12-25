@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Expense;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,4 +44,7 @@ public class UserDto {
 
     @JsonIgnore
     Set<Income> incomes = new HashSet<>();
+
+    @JsonIgnore
+    Set<Role> roles = new HashSet<>();
 }

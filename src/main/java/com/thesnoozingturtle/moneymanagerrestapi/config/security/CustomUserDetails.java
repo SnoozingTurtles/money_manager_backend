@@ -1,11 +1,15 @@
 package com.thesnoozingturtle.moneymanagerrestapi.config.security;
 
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Role;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CustomUserDetails implements UserDetails {
     private final User user;
@@ -15,7 +19,11 @@ public class CustomUserDetails implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>();
+        Set<Role> roles = user.getRoles();
+        Set<SimpleGrantedAuthority> authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRoleName()))
+                .collect(Collectors.toSet());
+        return authorities;
     }
 
     @Override

@@ -23,7 +23,7 @@ class UserRepoTest {
     void itShouldFindUserByEmailIfEmailExists() {
         //given
         String email = "abc@gmail.com";
-        User user = new User(1, "Test", "abc", email, null, null, null);
+        User user = new User(1, "Test", "abc", email, null, null, null, null, null);
         User savedUser = this.userRepo.save(user);
 
         //when

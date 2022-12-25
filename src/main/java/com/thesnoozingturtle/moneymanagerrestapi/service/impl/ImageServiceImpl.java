@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,7 +43,6 @@ public class ImageServiceImpl implements ImageService {
             Files.copy(imageStream, Paths.get(fullPath));
             return imageName;
         } catch(Exception exception) {
-            exception.printStackTrace();
             return null;
         }
     }

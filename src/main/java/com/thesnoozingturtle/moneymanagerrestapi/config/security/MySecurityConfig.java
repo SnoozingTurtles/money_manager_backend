@@ -6,7 +6,6 @@ import com.thesnoozingturtle.moneymanagerrestapi.exception.MyAccessDeniedHandler
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -30,7 +29,8 @@ public class MySecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final static String[] PUBLIC_URLS = {
             "/api/users/registerUser",
-            "/api/auth/**"
+            "/api/auth/**",
+            "/swagger-ui/**"
     };
     private final MyAccessDeniedHandler myAccessDeniedHandler;
 
@@ -61,7 +61,6 @@ public class MySecurityConfig {
                 .disable()
                 .authorizeHttpRequests()
                 .antMatchers(PUBLIC_URLS).permitAll()
-                .antMatchers(HttpMethod.GET).permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
