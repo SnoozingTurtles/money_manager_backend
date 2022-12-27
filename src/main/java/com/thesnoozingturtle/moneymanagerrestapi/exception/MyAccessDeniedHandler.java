@@ -17,7 +17,6 @@ public class MyAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        System.out.println("\n\n\n\n INSIDE HANDLE METHOD \n\n\n\n");
         ApiResponse apiResponse = new ApiResponse(accessDeniedException.getMessage(), false);
         response.setContentType("application/json");
         OutputStream outputStream = response.getOutputStream();

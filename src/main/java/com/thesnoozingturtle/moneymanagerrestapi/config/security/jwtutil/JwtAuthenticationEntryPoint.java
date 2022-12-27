@@ -19,9 +19,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     //to show error if unauthorized person tries to access
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-//        System.out.println("\n\n\n\n HELLO INSIDE COMMENCE! \n\n\n");
-//        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
         ApiResponse apiResponse = new ApiResponse(authException.getMessage(), false);
+        response.setContentType("application/json");
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.getWriter().write(convertObjectToJson(apiResponse));
     }
