@@ -30,7 +30,9 @@ public class MySecurityConfig {
     private final static String[] PUBLIC_URLS = {
             "/api/users/registerUser",
             "/api/auth/**",
-            "/swagger-ui/**"
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/v2/api-docs"
     };
     private final MyAccessDeniedHandler myAccessDeniedHandler;
 
