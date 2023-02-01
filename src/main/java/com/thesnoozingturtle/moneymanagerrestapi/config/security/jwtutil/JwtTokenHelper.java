@@ -19,7 +19,7 @@ public class JwtTokenHelper {
     public static long JWT_TOKEN_VALIDITY = 60;
 
 
-    @Value("jwt.secret_key")
+    @Value("${jwt.secret_key}")
     private String secret;
 
     //retrieve username from jwt token
