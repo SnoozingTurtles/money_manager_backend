@@ -6,6 +6,8 @@ target/
 /src/main/resources/application-dev.properties
 /src/main/resources/application.properties
 /src/main/resources/application-prod.properties
+.git.bfg-report
+bfg-1.14.0.jar
 
 ### STS ###
 .apt_generated
