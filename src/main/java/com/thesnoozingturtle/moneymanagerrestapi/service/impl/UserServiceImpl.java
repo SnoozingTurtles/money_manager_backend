@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,8 +45,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(long userId, UserDto userDto) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user found with id:" + userId));
+    public UserDto updateUser(String userId, UserDto userDto) {
+        User user = getUser(userId);
         user.setEmail(userDto.getEmail());
         user.setName(userDto.getName());
         User updatedUser = this.userRepo.save(user);
@@ -53,8 +54,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(long userId) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user found with id:" + userId));
+    public UserDto getUserById(String userId) {
+        User user = getUser(userId);
         return this.modelMapper.map(user, UserDto.class);
     }
 
@@ -68,8 +69,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(long userId) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user found with id:" + userId));
+    public void deleteUser(String userId) {
+        User user = getUser(userId);
         this.userRepo.delete(user);
+    }
+
+    private User getUser(String userId) {
+        User user = this.userRepo.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("No user found with id:" + userId));
+        return user;
     }
 }

@@ -6,8 +6,8 @@ import java.util.Set;
 
 public interface UserService {
     UserDto registerNewUser(UserDto userDto);
-    UserDto updateUser(long userId, UserDto userDto);
-    UserDto getUserById(long userId);
+    UserDto updateUser(String userId, UserDto userDto);
+    UserDto getUserById(String userId);
     Set<UserDto> getAllUsers();
-    void deleteUser(long userId);
+    void deleteUser(String userId);
 }

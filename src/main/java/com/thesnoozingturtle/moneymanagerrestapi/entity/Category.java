@@ -8,15 +8,14 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@AllArgsConstructor
 @Getter
 @Setter
 @NoArgsConstructor
-public class RefreshToken {
+@AllArgsConstructor
+public class Category {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -26,13 +25,10 @@ public class RefreshToken {
     @Type(type = "uuid-char")
     private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String refreshToken;
+    @Column(nullable = false, length = 10)
+    private String name;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
-
-    @Column(nullable = false)
-    private Instant expiryDate;
 }

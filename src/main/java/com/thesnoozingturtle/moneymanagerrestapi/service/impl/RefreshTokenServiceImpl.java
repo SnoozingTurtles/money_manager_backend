@@ -17,7 +17,7 @@ import java.util.UUID;
 @Service
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
-    @Value("${refreshToken.expirationMs}")
+    @Value("${refresh_token.expirationMs}")
     private long refreshTokenExpirationMs;
 
     private final RefreshTokenRepo refreshTokenRepo;
@@ -34,7 +34,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
-    public RefreshToken createRefreshToken(long userId) {
+    public RefreshToken createRefreshToken(String userId) {
         RefreshToken refreshToken = new RefreshToken();
         User user = getUser(userId);
 
@@ -58,12 +58,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
-    public int deleteRefreshTokenByUser(long userId) {
+    public int deleteRefreshTokenByUser(String userId) {
         User user = getUser(userId);
         return refreshTokenRepo.deleteByUser(user);
     }
 
-    private User getUser(long userId) {
-        return userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user found with given id!"));
+    private User getUser(String userId) {
+        return userRepo.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("No user found with given id!"));
     }
 }

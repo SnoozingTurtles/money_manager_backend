@@ -14,6 +14,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +22,7 @@ import java.util.Set;
 public class UserDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private long id;
+    private UUID id;
 
     @NotEmpty(message = "Name cannot be empty")
     @Size(min = 2, max = 30, message = "Name must be between 2 - 30 characters long")

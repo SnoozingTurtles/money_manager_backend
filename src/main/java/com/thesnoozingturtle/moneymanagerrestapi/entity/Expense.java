@@ -1,9 +1,12 @@
 package com.thesnoozingturtle.moneymanagerrestapi.entity;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -14,14 +17,16 @@ import java.time.LocalDateTime;
 public class Expense {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Type(type = "uuid-char")
+    private UUID id;
 
     @Column(length = 150)
     private String description;
-
-    @Column(nullable = false)
-    private String category;
     private String type;
 
     @Column(nullable = false)
@@ -34,4 +39,8 @@ public class Expense {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 }

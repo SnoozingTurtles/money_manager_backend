@@ -52,7 +52,7 @@ public class AuthController {
 
         //Fetching user to send user Id in response
         User user = this.userRepo.findByEmail(jwtAuthRequest.getEmail());
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId().toString());
         TokenAuthResponse tokenAuthResponse = new TokenAuthResponse(user.getId(), jwtToken, refreshToken.getRefreshToken());
         return new ResponseEntity<>(tokenAuthResponse, HttpStatus.OK);
     }

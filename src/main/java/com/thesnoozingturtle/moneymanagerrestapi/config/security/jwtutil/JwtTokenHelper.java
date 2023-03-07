@@ -15,11 +15,11 @@ import java.util.function.Function;
 @Component
 public class JwtTokenHelper {
 
-    @Value("${jwt.expirationMs}")
+    @Value("${jwt.access_token.expirationMs}")
     public static long JWT_TOKEN_VALIDITY = 60;
 
 
-    @Value("${jwt.secret_key}")
+    @Value("${jwt.access_token.secret_key}")
     private String secret;
 
     //retrieve username from jwt token

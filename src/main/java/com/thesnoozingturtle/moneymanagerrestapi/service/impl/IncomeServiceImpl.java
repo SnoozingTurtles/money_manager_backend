@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +37,7 @@ public class IncomeServiceImpl implements IncomeService {
         this.imageService = imageService;
     }
     @Override
-    public IncomeDto addIncome(long userId, IncomeDto incomeDto, MultipartFile image) {
+    public IncomeDto addIncome(String userId, IncomeDto incomeDto, MultipartFile image) {
         User user = getUser(userId);
         Income income = this.modelMapper.map(incomeDto, Income.class);
         user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) + Double.parseDouble(income.getAmount())));
@@ -52,10 +53,10 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public IncomeDto updateIncome(long userId, long incomeId, IncomeDto incomeDto, MultipartFile image) {
+    public IncomeDto updateIncome(String userId, String incomeId, IncomeDto incomeDto, MultipartFile image) {
         User user = getUser(userId);
         try {
-            Income income = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+            Income income = getIncome(incomeId, user);
             //to update the balance in user table
             double prevIncomeAmount = Double.parseDouble(income.getAmount());
             double prevBalance = Double.parseDouble(user.getBalance());
@@ -80,10 +81,10 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public IncomeDto getIncomeById(long userId, long incomeId) {
+    public IncomeDto getIncomeById(String userId, String incomeId) {
         User user = getUser(userId);
         try {
-            Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+            Income incomeById = getIncome(incomeId, user);
             return this.modelMapper.map(incomeById, IncomeDto.class);
         }  catch (Exception e) {
             throw new EntityNotFoundException("No income found for the given ID!");
@@ -91,7 +92,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public PaginationResponse<IncomeDto, Income> getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<IncomeDto, Income> getAllIncomes(String userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
         Page<Income> incomesPage = this.incomeRepo.getIncomeByUser(user, pageable);
@@ -100,10 +101,10 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public void deleteIncome(long userId, long incomeId) {
+    public void deleteIncome(String userId, String incomeId) {
         User user = getUser(userId);
         try {
-            Income incomeById = this.incomeRepo.getIncomeByIdAndUser(incomeId, user);
+            Income incomeById = getIncome(incomeId, user);
             this.incomeRepo.delete(incomeById);
         } catch (Exception e) {
             throw new EntityNotFoundException("No income found for the given ID!");
@@ -111,15 +112,16 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
-    public void deleteAllIncomes(long userId) {
+    public void deleteAllIncomes(String userId) {
         User user = getUser(userId);
         Set<Income> incomes = this.incomeRepo.getIncomeByUser(user);
         this.incomeRepo.deleteAll(incomes);
     }
 
     //Method to get incomes by providing a particular month and year
+
     @Override
-    public Set<IncomeDto> getAllIncomesByMonthAndYear(long userId, int month, int year) {
+    public Set<IncomeDto> getAllIncomesByMonthAndYear(String userId, int month, int year) {
         User user = getUser(userId);
         Set<Income> incomes = this.incomeRepo.getIncomesByMonthAndYearAndUser(user, month, year);
         Set<IncomeDto> incomeDtos = incomes.stream()
@@ -127,10 +129,10 @@ public class IncomeServiceImpl implements IncomeService {
                 .collect(Collectors.toSet());
         return incomeDtos;
     }
-
     //Method to get incomes by providing a particular month and year
+
     @Override
-    public PaginationResponse<IncomeDto, Income> getAllIncomesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<IncomeDto, Income> getAllIncomesBetweenAParticularDate(String startDateStr, String endDateStr, String userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         LocalDateTime startDate = LocalDateTime.parse(startDateStr);
         LocalDateTime endDate;
@@ -144,21 +146,21 @@ public class IncomeServiceImpl implements IncomeService {
         PaginationResponse<IncomeDto, Income> paginationResponse = getPaginationResponse(incomesPage);
         return paginationResponse;
     }
-
     //Get the user from userId
-    private User getUser(long userId) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
+
+    private User getUser(String userId) {
+        User user = this.userRepo.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
         return user;
     }
-
     //Get the Pageable object from parameters
+
     private Pageable getPageable(int pageNumber, int pageSize, String sortBy, String sortOrder) {
         Sort sort = (sortOrder.equalsIgnoreCase("asc")) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         return pageable;
     }
-
     //Generate an object of PaginationResponse
+
     private PaginationResponse<IncomeDto, Income> getPaginationResponse(Page<Income> incomesPage) {
         List<Income> incomesByUser = incomesPage.getContent();
         List<IncomeDto> allIncomes = incomesByUser
@@ -168,5 +170,10 @@ public class IncomeServiceImpl implements IncomeService {
 
         PaginationResponse<IncomeDto, Income> paginationResponse = new PaginationResponse<>(incomesPage, allIncomes);
         return paginationResponse;
+    }
+    private Income getIncome(String incomeId, User user) {
+        Income income = this.incomeRepo.getIncomeByIdAndUser(UUID.fromString(incomeId), user)
+                .orElseThrow(() -> new EntityNotFoundException("No such income found!"));
+        return income;
     }
 }

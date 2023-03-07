@@ -10,11 +10,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
 public interface ExpensesRepo extends JpaRepository<Expense, Long> {
-    Expense getExpenseByIdAndUser(long expenseId, User user);
+    Optional<Expense> getExpenseByIdAndUser(UUID expenseId, User user);
     Page<Expense> getExpensesByUser(User user, Pageable pageable);
     Set<Expense> getExpensesByUser(User user);
 

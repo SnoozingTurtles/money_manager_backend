@@ -10,11 +10,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
 public interface IncomeRepo extends JpaRepository<Income, Long> {
-    Income getIncomeByIdAndUser(long incomeId, User user);
+    Optional<Income> getIncomeByIdAndUser(UUID incomeId, User user);
     Page<Income> getIncomeByUser(User user, Pageable pageable);
     Set<Income> getIncomeByUser(User user);
     @Query("SELECT i FROM Income i WHERE MONTH(i.dateAdded) = :month AND " +

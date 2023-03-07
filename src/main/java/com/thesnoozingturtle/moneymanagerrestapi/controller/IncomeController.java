@@ -29,7 +29,8 @@ public class IncomeController {
 
     @PostMapping("/user/{userId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<IncomeDto> addIncome(@PathVariable long userId,
+    public ResponseEntity<IncomeDto> addIncome(@PathVariable String userId
+            ,
                                                @Valid @RequestPart(value = "income", required = true) IncomeDto incomeDto,
                                                @RequestParam(value = "image", required = false) MultipartFile image) {
         IncomeDto income = this.incomeService.addIncome(userId, incomeDto, image);
@@ -37,7 +38,8 @@ public class IncomeController {
     }
     @GetMapping("/user/{userId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<PaginationResponse<IncomeDto, Income>> getAllIncomes(@PathVariable long userId,
+    public ResponseEntity<PaginationResponse<IncomeDto, Income>> getAllIncomes(@PathVariable String userId
+            ,
                                                                                @RequestParam(value = "startDate", required = false) String startDateStr,
                                                                                @RequestParam(value = "endDate", required = false) String endDateStr,
                                                                                @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
@@ -57,7 +59,8 @@ public class IncomeController {
 
     @GetMapping("/user/{userId}/month/{month}/year/{year}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<Set<IncomeDto>> getAllIncomesByMonthAndYear(@PathVariable long userId,
+    public ResponseEntity<Set<IncomeDto>> getAllIncomesByMonthAndYear(@PathVariable String userId
+            ,
                                                                         @PathVariable int month,
                                                                         @PathVariable int year) {
         Set<IncomeDto> allIncomesByMonthAndYear = this.incomeService.getAllIncomesByMonthAndYear(userId, month, year);
@@ -66,14 +69,16 @@ public class IncomeController {
 
     @GetMapping("/user/{userId}/incomes/{incomeId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<IncomeDto> getSingleIncome(@PathVariable long userId, @PathVariable long incomeId) {
+    public ResponseEntity<IncomeDto> getSingleIncome(@PathVariable String userId
+            , @PathVariable String incomeId) {
         IncomeDto incomeDto = this.incomeService.getIncomeById(userId, incomeId);
         return new ResponseEntity<>(incomeDto, HttpStatus.OK);
     }
 
     @PutMapping("/user/{userId}/incomes/{incomeId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<IncomeDto> updateIncome(@PathVariable long userId, @PathVariable long incomeId,
+    public ResponseEntity<IncomeDto> updateIncome(@PathVariable String userId
+            , @PathVariable String incomeId,
                                                   @Valid @RequestPart("income") IncomeDto incomeDto,
                                                   @RequestParam(value = "image", required = false) MultipartFile image) {
         IncomeDto updateIncome = this.incomeService.updateIncome(userId, incomeId, incomeDto, image);
@@ -82,7 +87,8 @@ public class IncomeController {
 
     @DeleteMapping("/user/{userId}/incomes/{incomeId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ApiResponse> deleteIncome(@PathVariable long userId, @PathVariable long incomeId) {
+    public ResponseEntity<ApiResponse> deleteIncome(@PathVariable String userId
+            , @PathVariable String incomeId) {
         this.incomeService.deleteIncome(userId, incomeId);
         return new ResponseEntity<>(new ApiResponse("Income with income id " + incomeId + " deleted successfully!", true),
                 HttpStatus.OK);
@@ -90,7 +96,8 @@ public class IncomeController {
 
     @DeleteMapping("/user/{userId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ApiResponse> deleteAllIncomes(@PathVariable long userId) {
+    public ResponseEntity<ApiResponse> deleteAllIncomes(@PathVariable String userId
+    ) {
         this.incomeService.deleteAllIncomes(userId);
         return new ResponseEntity<>(new ApiResponse("All incomes of user with user id:" + userId + " deleted successfully!",
                 true), HttpStatus.OK);

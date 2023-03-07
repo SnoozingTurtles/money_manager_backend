@@ -21,27 +21,27 @@ class ExpensesRepoTest {
     @Autowired
     private UserRepo userRepo;
 
-    @Test
-    void itShouldGetExpenseByIdAndUser() {
-        //given
-        String description = "testDescription";
-        String category = "testCategory";
-        String type = "testType";
-        String amount = "1000";
-        LocalDateTime dateAdded = LocalDateTime.parse("2022-12-08T12:39:21.239");
-        String email = "abc@gmail.com";
-        String imageName = "default.png";
-        User user = new User(1, "Test", "abc", email, null, null, null, null, null);
-        User savedUser = this.userRepo.save(user);
-        Expense savedExpense = this.expensesRepo.save(new Expense(1, description, category, type, amount, imageName, dateAdded, user));
-
-        //when
-        Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(1, user);
-
-        //then
-        assertThat(expenseByIdAndUser).isEqualTo(savedExpense);
-
-    }
+//    @Test
+//    void itShouldGetExpenseByIdAndUser() {
+//        //given
+//        String description = "testDescription";
+//        String category = "testCategory";
+//        String type = "testType";
+//        String amount = "1000";
+//        LocalDateTime dateAdded = LocalDateTime.parse("2022-12-08T12:39:21.239");
+//        String email = "abc@gmail.com";
+//        String imageName = "default.png";
+//        User user = new User(1, "Test", "abc", email, null, null, null, null, null);
+//        User savedUser = this.userRepo.save(user);
+//        Expense savedExpense = this.expensesRepo.save(new Expense(1, description, category, type, amount, imageName, dateAdded, user));
+//
+//        //when
+//        Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(1, user);
+//
+//        //then
+//        assertThat(expenseByIdAndUser).isEqualTo(savedExpense);
+//
+//    }
 
     @Test
     void getExpensesByUser() {

@@ -20,7 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +42,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to add expense for a particular user
     @Override
-    public ExpenseDto addExpense(ExpenseDto expenseDto, long userId, MultipartFile image) {
+    public ExpenseDto addExpense(ExpenseDto expenseDto, String userId, MultipartFile image) {
         User user = getUser(userId);
         Expense expense = this.modelMapper.map(expenseDto, Expense.class);
         user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) - Double.parseDouble(expense.getAmount())));
@@ -58,9 +60,9 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to update expense for a particular user
     @Override
-    public ExpenseDto updateExpense(long userId, long expenseId, ExpenseDto expenseDto, MultipartFile image) {
+    public ExpenseDto updateExpense(String userId, String expenseId, ExpenseDto expenseDto, MultipartFile image) {
         User user = getUser(userId);
-        Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
+        Expense expenseByIdAndUser = getExpense(expenseId, user);
 
         try {
             //to update the balance in user table
@@ -72,7 +74,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
             //updating all the fields
             expenseByIdAndUser.setAmount(expenseDto.getAmount());
-            expenseByIdAndUser.setCategory(expenseDto.getCategory());
+//            expenseByIdAndUser.setCategory(expenseDto.getCategory());
             expenseByIdAndUser.setDescription(expenseDto.getDescription());
             expenseByIdAndUser.setType(expenseDto.getType());
             LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
@@ -88,12 +90,14 @@ public class ExpenseServiceImpl implements ExpenseService {
         }
     }
 
+
+
     //Method to get an expense by its id for a particular user
     @Override
-    public ExpenseDto getExpenseById(long userId, long expenseId) {
+    public ExpenseDto getExpenseById(String userId, String expenseId) {
         User user = getUser(userId);
         try {
-            Expense expenseByIdAndUser = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
+            Expense expenseByIdAndUser = getExpense(expenseId, user);
             return this.modelMapper.map(expenseByIdAndUser, ExpenseDto.class);
         }  catch (Exception e) {
             throw new EntityNotFoundException("No expense found for the given ID!");
@@ -102,7 +106,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to get all the expenses of a user
     @Override
-    public PaginationResponse<ExpenseDto, Expense> getAllExpenses(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<ExpenseDto, Expense> getAllExpenses(String userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
         Page<Expense> expensePage = this.expensesRepo.getExpensesByUser(user, pageable);
@@ -112,10 +116,10 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to delete an expense of a user by expense id
     @Override
-    public void deleteExpense(long userId, long expenseId) {
+    public void deleteExpense(String userId, String expenseId) {
         User user = getUser(userId);
         try {
-            Expense expense = this.expensesRepo.getExpenseByIdAndUser(expenseId, user);
+            Expense expense = getExpense(expenseId, user);
             this.expensesRepo.delete(expense);
         }  catch (Exception e) {
             throw new EntityNotFoundException("No expense found for the given ID!");
@@ -124,7 +128,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to delete all the expenses of a user
     @Override
-    public void deleteAllExpenses(long userId) {
+    public void deleteAllExpenses(String userId) {
         User user = getUser(userId);
         Set<Expense> expenses = this.expensesRepo.getExpensesByUser(user);
         this.expensesRepo.deleteAll(expenses);
@@ -132,7 +136,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to get expenses by providing a particular month and year
     @Override
-    public Set<ExpenseDto> getAllExpensesByMonthAndYear(long userId, int month, int year) {
+    public Set<ExpenseDto> getAllExpensesByMonthAndYear(String userId, int month, int year) {
         User user = getUser(userId);
         Set<Expense> expenses = this.expensesRepo.getExpensesByMonthAndYearAndUser(user, month, year);
         Set<ExpenseDto> expenseDtos = expenses.stream()
@@ -143,7 +147,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to get expenses by providing a particular month and year
     @Override
-    public PaginationResponse<ExpenseDto, Expense> getAllExpensesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+    public PaginationResponse<ExpenseDto, Expense> getAllExpensesBetweenAParticularDate(String startDateStr, String endDateStr, String userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         LocalDateTime startDate = LocalDateTime.parse(startDateStr);
         LocalDateTime endDate;
@@ -159,8 +163,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     //Get the user from userId
-    private User getUser(long userId) {
-        User user = this.userRepo.findById(userId).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
+    private User getUser(String userId) {
+        User user = this.userRepo.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
         return user;
     }
 
@@ -181,5 +185,11 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         PaginationResponse<ExpenseDto, Expense> paginationResponse = new PaginationResponse<>(expensePage, allExpenses);
         return paginationResponse;
+    }
+    private Expense getExpense(String expenseId, User user) {
+        Expense expenseByIdAndUser = this.expensesRepo
+                .getExpenseByIdAndUser(UUID.fromString(expenseId), user)
+                .orElseThrow(() -> new EntityNotFoundException("No expense found with id:" + expenseId));
+        return expenseByIdAndUser;
     }
 }

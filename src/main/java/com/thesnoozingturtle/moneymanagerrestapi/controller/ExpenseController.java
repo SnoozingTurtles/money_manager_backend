@@ -30,7 +30,7 @@ public class ExpenseController {
 
     @PostMapping(value = "/user/{userId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ExpenseDto> addExpense(@PathVariable long userId,
+    public ResponseEntity<ExpenseDto> addExpense(@PathVariable String userId,
                                                  @Valid @RequestPart("expense") ExpenseDto expenseDto,
                                                  @RequestParam(value = "image", required = false) MultipartFile image) {
         ExpenseDto addedExpense = this.expenseService.addExpense(expenseDto, userId, image);
@@ -39,7 +39,7 @@ public class ExpenseController {
 
     @GetMapping("/user/{userId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<PaginationResponse<ExpenseDto, Expense>> getAllExpenses(@PathVariable long userId,
+    public ResponseEntity<PaginationResponse<ExpenseDto, Expense>> getAllExpenses(@PathVariable String userId,
                                                                                   @RequestParam(value = "startDate", required = false) String startDateStr,
                                                                                   @RequestParam(value = "endDate", required = false) String endDateStr,
                                                                                   @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
@@ -59,7 +59,7 @@ public class ExpenseController {
 
     @GetMapping("/user/{userId}/month/{month}/year/{year}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<Set<ExpenseDto>> getAllExpensesByMonthAndYear(@PathVariable long userId,
+    public ResponseEntity<Set<ExpenseDto>> getAllExpensesByMonthAndYear(@PathVariable String userId,
                                                                         @PathVariable int month,
                                                                         @PathVariable int year) {
         Set<ExpenseDto> allExpensesOfLastMonth = this.expenseService.getAllExpensesByMonthAndYear(userId, month, year);
@@ -68,14 +68,14 @@ public class ExpenseController {
 
     @GetMapping("/user/{userId}/expenses/{expenseId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ExpenseDto> getSingleExpense(@PathVariable long userId, @PathVariable long expenseId) {
+    public ResponseEntity<ExpenseDto> getSingleExpense(@PathVariable String userId, @PathVariable String expenseId) {
         ExpenseDto expenseById = this.expenseService.getExpenseById(userId, expenseId);
         return new ResponseEntity<>(expenseById, HttpStatus.OK);
     }
 
     @PutMapping("/user/{userId}/expenses/{expenseId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ExpenseDto> updateExpense(@PathVariable long userId, @PathVariable long expenseId,
+    public ResponseEntity<ExpenseDto> updateExpense(@PathVariable String userId, @PathVariable String expenseId,
                                                     @Valid @RequestPart("expense") ExpenseDto expenseDto,
                                                     @RequestParam(value = "image", required = false) MultipartFile image) {
         ExpenseDto updateExpense = this.expenseService.updateExpense(userId, expenseId, expenseDto, image);
@@ -84,7 +84,7 @@ public class ExpenseController {
 
     @DeleteMapping("/user/{userId}/expenses/{expenseId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ApiResponse> deleteExpense(@PathVariable long userId, @PathVariable long expenseId) {
+    public ResponseEntity<ApiResponse> deleteExpense(@PathVariable String userId, @PathVariable String expenseId) {
         this.expenseService.deleteExpense(userId, expenseId);
         return new ResponseEntity<>(new ApiResponse("Expense with expense id " + expenseId + " deleted successfully!", true),
                 HttpStatus.OK);
@@ -92,7 +92,7 @@ public class ExpenseController {
 
     @DeleteMapping("/user/{userId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ApiResponse> deleteAllExpenses(@PathVariable long userId) {
+    public ResponseEntity<ApiResponse> deleteAllExpenses(@PathVariable String userId) {
         this.expenseService.deleteAllExpenses(userId);
         return new ResponseEntity<>(new ApiResponse("All expenses of user with user id:" + userId + " deleted successfully!",
                 true), HttpStatus.OK);

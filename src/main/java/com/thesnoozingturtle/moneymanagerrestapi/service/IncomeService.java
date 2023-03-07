@@ -8,12 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Set;
 
 public interface IncomeService {
-    IncomeDto addIncome(long userId, IncomeDto incomeDto, MultipartFile image);
-    IncomeDto updateIncome(long userId, long incomeId, IncomeDto incomeDto, MultipartFile image);
-    IncomeDto getIncomeById(long userId, long incomeId);
-    PaginationResponse<IncomeDto, Income> getAllIncomes(long userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
-    void deleteIncome(long userId, long incomeId);
-    void deleteAllIncomes(long userId);
-    Set<IncomeDto> getAllIncomesByMonthAndYear(long userId, int month, int year);
-    PaginationResponse<IncomeDto, Income> getAllIncomesBetweenAParticularDate(String startDateStr, String endDateStr, long userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
+    IncomeDto addIncome(String userId, IncomeDto incomeDto, MultipartFile image);
+    IncomeDto updateIncome(String userId, String incomeId, IncomeDto incomeDto, MultipartFile image);
+    IncomeDto getIncomeById(String userId, String incomeId);
+    PaginationResponse<IncomeDto, Income> getAllIncomes(String userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
+    void deleteIncome(String userId, String incomeId);
+    void deleteAllIncomes(String userId);
+    Set<IncomeDto> getAllIncomesByMonthAndYear(String userId, int month, int year);
+    PaginationResponse<IncomeDto, Income> getAllIncomesBetweenAParticularDate(String startDateStr, String endDateStr, String userId, int pageNumber, int pageSize, String sortBy, String sortOrder);
 }

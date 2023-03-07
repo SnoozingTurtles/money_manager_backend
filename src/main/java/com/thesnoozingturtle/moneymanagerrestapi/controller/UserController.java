@@ -37,7 +37,7 @@ public class UserController {
                 notes = "Provide user id to look up the user from the list of users",
                 response = UserDto.class)
     @PreAuthorize(value = "hasRole('ADMIN')")
-    public ResponseEntity<UserDto> getUserById(@ApiParam(value = "Enter user id") @PathVariable long userId) {
+    public ResponseEntity<UserDto> getUserById(@ApiParam(value = "Enter user id") @PathVariable String userId) {
         UserDto userDto = this.userService.getUserById(userId);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
@@ -50,7 +50,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<UserDto> updateUser(@PathVariable int userId,
+    public ResponseEntity<UserDto> updateUser(@PathVariable String userId,
                                               @Valid @RequestBody UserDto userDto) {
         UserDto updatedUser = this.userService.updateUser(userId, userDto);
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
@@ -58,7 +58,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @PreAuthorize(value = "hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> deleteUser(@PathVariable long userId) {
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable String userId) {
         this.userService.deleteUser(userId);
         return new ResponseEntity<>(
                 new ApiResponse("User with id " + userId + " successfully deleted", true),
