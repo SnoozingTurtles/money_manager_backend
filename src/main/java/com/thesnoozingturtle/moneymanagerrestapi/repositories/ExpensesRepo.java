@@ -1,5 +1,6 @@
 package com.thesnoozingturtle.moneymanagerrestapi.repositories;
 
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Category;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Expense;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import java.util.UUID;
 public interface ExpensesRepo extends JpaRepository<Expense, Long> {
     Optional<Expense> getExpenseByIdAndUser(UUID expenseId, User user);
     Page<Expense> getExpensesByUser(User user, Pageable pageable);
+    Page<Expense> getExpensesByUserAndCategory(User user, Category category, Pageable pageable);
     Set<Expense> getExpensesByUser(User user);
 
     @Query("SELECT e FROM Expense e WHERE MONTH(e.dateAdded) = :month AND " +

@@ -1,10 +1,12 @@
 package com.thesnoozingturtle.moneymanagerrestapi.service.impl;
 
 import com.thesnoozingturtle.moneymanagerrestapi.dto.ExpenseDto;
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Category;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Expense;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import com.thesnoozingturtle.moneymanagerrestapi.exception.EntityNotFoundException;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.repositories.CategoryRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.ExpensesRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.ExpenseService;
@@ -20,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,28 +32,29 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
     private final ImageService imageService;
+    private final CategoryRepo categoryRepo;
 
     @Autowired
-    public ExpenseServiceImpl(ExpensesRepo expensesRepo, UserRepo userRepo, ModelMapper modelMapper, ImageService imageService) {
+    public ExpenseServiceImpl(ExpensesRepo expensesRepo, UserRepo userRepo, ModelMapper modelMapper, ImageService imageService, CategoryRepo categoryRepo) {
         this.expensesRepo = expensesRepo;
         this.userRepo = userRepo;
         this.modelMapper = modelMapper;
         this.imageService = imageService;
+        this.categoryRepo = categoryRepo;
     }
 
     //Method to add expense for a particular user
     @Override
-    public ExpenseDto addExpense(ExpenseDto expenseDto, String userId, MultipartFile image) {
+    public ExpenseDto addExpense(ExpenseDto expenseDto, String userId, String categoryId) {
         User user = getUser(userId);
+        Category category = getCategoryByCategoryIdAndUser(categoryId, user);
         Expense expense = this.modelMapper.map(expenseDto, Expense.class);
         user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) - Double.parseDouble(expense.getAmount())));
         expense.setUser(user);
         LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
         expense.setDateAdded(ldt);
+        expense.setCategory(category);
 
-        //Uploading image
-        String imageName = imageService.uploadImage(image);
-        expense.setImageName(imageName);
         this.userRepo.save(user);
         Expense savedExpense = this.expensesRepo.save(expense);
         return this.modelMapper.map(savedExpense, ExpenseDto.class);
@@ -60,8 +62,9 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to update expense for a particular user
     @Override
-    public ExpenseDto updateExpense(String userId, String expenseId, ExpenseDto expenseDto, MultipartFile image) {
+    public ExpenseDto updateExpense(String userId, String expenseId, String categoryId, ExpenseDto expenseDto) {
         User user = getUser(userId);
+        Category category = getCategoryByCategoryIdAndUser(categoryId, user);
         Expense expenseByIdAndUser = getExpense(expenseId, user);
 
         try {
@@ -79,10 +82,8 @@ public class ExpenseServiceImpl implements ExpenseService {
             expenseByIdAndUser.setType(expenseDto.getType());
             LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
             expenseByIdAndUser.setDateAdded(ldt);
-            if (image != null) {
-                String imageName = imageService.uploadImage(image);
-                expenseByIdAndUser.setImageName(imageName);
-            }
+            expenseByIdAndUser.setCategory(category);
+
             Expense updatedExpense = this.expensesRepo.save(expenseByIdAndUser);
             return this.modelMapper.map(updatedExpense, ExpenseDto.class);
         }  catch (Exception e) {
@@ -112,6 +113,15 @@ public class ExpenseServiceImpl implements ExpenseService {
         Page<Expense> expensePage = this.expensesRepo.getExpensesByUser(user, pageable);
         PaginationResponse<ExpenseDto, Expense> paginationResponse = getPaginationResponse(expensePage);
         return paginationResponse;
+    }
+
+    @Override
+    public PaginationResponse<ExpenseDto, Expense> getAllExpensesByCategory(String userId, String categoryId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+        User user = getUser(userId);
+        Category categoryByCategoryIdAndUser = getCategoryByCategoryIdAndUser(categoryId, user);
+        Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
+        Page<Expense> expensesByUserAndCategory = expensesRepo.getExpensesByUserAndCategory(user, categoryByCategoryIdAndUser, pageable);
+        return getPaginationResponse(expensesByUserAndCategory);
     }
 
     //Method to delete an expense of a user by expense id
@@ -166,6 +176,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     private User getUser(String userId) {
         User user = this.userRepo.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
         return user;
+    }
+
+    private Category getCategoryByCategoryIdAndUser(String categoryId, User user) {
+        return categoryRepo.findCategoryByIdAndUser(UUID.fromString(categoryId), user)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + categoryId));
     }
 
     //Get the Pageable object from parameters

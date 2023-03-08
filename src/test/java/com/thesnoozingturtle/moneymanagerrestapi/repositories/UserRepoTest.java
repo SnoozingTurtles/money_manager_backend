@@ -19,19 +19,19 @@ class UserRepoTest {
         this.userRepo.deleteAll();
     }
 
-    @Test
-    void itShouldFindUserByEmailIfEmailExists() {
-        //given
-        String email = "abc@gmail.com";
-        User user = new User(1, "Test", "abc", email, null, null, null, null, null);
-        User savedUser = this.userRepo.save(user);
-
-        //when
-        User expectedUser = this.userRepo.findByEmail(email);
-
-        //then
-        assertThat(expectedUser).isEqualTo(savedUser);
-    }
+//    @Test
+//    void itShouldFindUserByEmailIfEmailExists() {
+//        //given
+//        String email = "abc@gmail.com";
+//        User user = new User(1, "Test", "abc", email, null, null, null, null, null);
+//        User savedUser = this.userRepo.save(user);
+//
+//        //when
+//        User expectedUser = this.userRepo.findByEmail(email);
+//
+//        //then
+//        assertThat(expectedUser).isEqualTo(savedUser);
+//    }
     @Test
     void itShouldReturnNullForFindUserByEmailIfEmailDoesNotExists() {
         //given

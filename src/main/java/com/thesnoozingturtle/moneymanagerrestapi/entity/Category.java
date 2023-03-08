@@ -25,7 +25,7 @@ public class Category {
     @Type(type = "uuid-char")
     private UUID id;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 30)
     private String name;
 
     @ManyToOne

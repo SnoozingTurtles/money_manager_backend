@@ -50,7 +50,7 @@ public class AuthController {
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(jwtAuthRequest.getEmail());
         String jwtToken = this.jwtTokenHelper.generateToken(userDetails);
 
-        //Fetching user to send user Id in response
+        //Fetching user to send user id in response
         User user = this.userRepo.findByEmail(jwtAuthRequest.getEmail());
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId().toString());
         TokenAuthResponse tokenAuthResponse = new TokenAuthResponse(user.getId(), jwtToken, refreshToken.getRefreshToken());

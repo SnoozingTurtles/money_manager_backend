@@ -19,9 +19,6 @@ public class ExpenseDto {
     private UUID id;
     @Size(min = 0, max = 150, message = "Description cannot be more than 150 characters long")
     private String description;
-
-    @NotEmpty(message = "Category field cannot be empty")
-    private String category;
     private String type;
 
     @Pattern(regexp = "^[1-9]\\d*(\\.\\d+)?$", message = "Please enter a valid amount")
