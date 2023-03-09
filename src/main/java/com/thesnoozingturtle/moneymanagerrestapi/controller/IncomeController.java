@@ -12,13 +12,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.Set;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class IncomeController {
     private final IncomeService incomeService;
 
@@ -27,19 +29,22 @@ public class IncomeController {
         this.incomeService = incomeService;
     }
 
-    @PostMapping("/user/{userId}/incomes")
+    @PostMapping("/{userId}/categories/{categoryId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<IncomeDto> addIncome(@PathVariable String userId
-            ,
-                                               @Valid @RequestPart(value = "income", required = true) IncomeDto incomeDto,
-                                               @RequestParam(value = "image", required = false) MultipartFile image) {
-        IncomeDto income = this.incomeService.addIncome(userId, incomeDto, image);
-        return new ResponseEntity<>(income, HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse> addIncome(@PathVariable String userId,
+                                               @PathVariable String categoryId,
+                                               @Valid @RequestBody IncomeDto incomeDto) {
+        IncomeDto income = this.incomeService.addIncome(userId, categoryId, incomeDto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().replacePath("/api/users/{userId}/incomes/{incomeId}")
+                .buildAndExpand(userId, income.getId()).toUri();
+        return ResponseEntity.created(uri).body(ApiResponse.builder()
+                .success(true)
+                .message("Income added successfully!")
+                .build());
     }
-    @GetMapping("/user/{userId}/incomes")
+    @GetMapping("/{userId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<PaginationResponse<IncomeDto, Income>> getAllIncomes(@PathVariable String userId
-            ,
+    public ResponseEntity<PaginationResponse<IncomeDto, Income>> getAllIncomes(@PathVariable String userId,
                                                                                @RequestParam(value = "startDate", required = false) String startDateStr,
                                                                                @RequestParam(value = "endDate", required = false) String endDateStr,
                                                                                @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
@@ -57,17 +62,27 @@ public class IncomeController {
         return new ResponseEntity<>(paginationResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/month/{month}/year/{year}/incomes")
+    @GetMapping("/{userId}/categories/{categoryId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<Set<IncomeDto>> getAllIncomesByMonthAndYear(@PathVariable String userId
-            ,
+    public ResponseEntity<PaginationResponse<IncomeDto, Income>> getAllIncomesByUserAndCategory(@PathVariable String userId,
+                                                                                                @PathVariable String categoryId,
+                                                                                                @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) int pageNumber,
+                                                                                                @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) int pageSize,
+                                                                                                @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_BY, required = false) String sortBy,
+                                                                                                @RequestParam(value = "sortOrder", defaultValue = AppConstants.SORT_ORDER, required = false) String sortOrder) {
+        PaginationResponse<IncomeDto, Income> allIncomesByCategory = incomeService.getAllIncomesByCategory(userId, categoryId, pageNumber, pageSize, sortBy, sortOrder);
+        return ResponseEntity.ok(allIncomesByCategory);
+    }
+    @GetMapping("/{userId}/month/{month}/year/{year}/incomes")
+    @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
+    public ResponseEntity<Set<IncomeDto>> getAllIncomesByMonthAndYear(@PathVariable String userId,
                                                                         @PathVariable int month,
                                                                         @PathVariable int year) {
         Set<IncomeDto> allIncomesByMonthAndYear = this.incomeService.getAllIncomesByMonthAndYear(userId, month, year);
         return new ResponseEntity<>(allIncomesByMonthAndYear, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/incomes/{incomeId}")
+    @GetMapping("/{userId}/incomes/{incomeId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<IncomeDto> getSingleIncome(@PathVariable String userId
             , @PathVariable String incomeId) {
@@ -75,29 +90,28 @@ public class IncomeController {
         return new ResponseEntity<>(incomeDto, HttpStatus.OK);
     }
 
-    @PutMapping("/user/{userId}/incomes/{incomeId}")
+    @PutMapping("/{userId}/categories/{categoryId}/incomes/{incomeId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<IncomeDto> updateIncome(@PathVariable String userId
-            , @PathVariable String incomeId,
-                                                  @Valid @RequestPart("income") IncomeDto incomeDto,
-                                                  @RequestParam(value = "image", required = false) MultipartFile image) {
-        IncomeDto updateIncome = this.incomeService.updateIncome(userId, incomeId, incomeDto, image);
+    public ResponseEntity<IncomeDto> updateIncome(@PathVariable String userId,
+                                                  @PathVariable String incomeId,
+                                                  @PathVariable String categoryId,
+                                                  @Valid @RequestBody IncomeDto incomeDto) {
+        IncomeDto updateIncome = this.incomeService.updateIncome(userId, incomeId, categoryId, incomeDto);
         return new ResponseEntity<>(updateIncome, HttpStatus.OK);
     }
 
-    @DeleteMapping("/user/{userId}/incomes/{incomeId}")
+    @DeleteMapping("/{userId}/incomes/{incomeId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ApiResponse> deleteIncome(@PathVariable String userId
-            , @PathVariable String incomeId) {
+    public ResponseEntity<ApiResponse> deleteIncome(@PathVariable String userId,
+                                                    @PathVariable String incomeId) {
         this.incomeService.deleteIncome(userId, incomeId);
         return new ResponseEntity<>(new ApiResponse("Income with income id " + incomeId + " deleted successfully!", true),
                 HttpStatus.OK);
     }
 
-    @DeleteMapping("/user/{userId}/incomes")
+    @DeleteMapping("/{userId}/incomes")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ApiResponse> deleteAllIncomes(@PathVariable String userId
-    ) {
+    public ResponseEntity<ApiResponse> deleteAllIncomes(@PathVariable String userId) {
         this.incomeService.deleteAllIncomes(userId);
         return new ResponseEntity<>(new ApiResponse("All incomes of user with user id:" + userId + " deleted successfully!",
                 true), HttpStatus.OK);

@@ -1,5 +1,6 @@
 package com.thesnoozingturtle.moneymanagerrestapi.repositories;
 
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Category;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Repository
 public interface IncomeRepo extends JpaRepository<Income, Long> {
     Optional<Income> getIncomeByIdAndUser(UUID incomeId, User user);
+    Page<Income> getIncomeByUserAndCategory(User user, Category category, Pageable pageable);
     Page<Income> getIncomeByUser(User user, Pageable pageable);
     Set<Income> getIncomeByUser(User user);
     @Query("SELECT i FROM Income i WHERE MONTH(i.dateAdded) = :month AND " +

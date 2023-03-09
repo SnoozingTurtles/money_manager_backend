@@ -11,13 +11,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.Set;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
@@ -27,16 +29,21 @@ public class ExpenseController {
         this.expenseService = expenseService;
     }
 
-    @PostMapping(value = "/user/{userId}/categories/{categoryId}/expenses")
+    @PostMapping(value = "/{userId}/categories/{categoryId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
-    public ResponseEntity<ExpenseDto> addExpense(@PathVariable String userId,
+    public ResponseEntity<ApiResponse> addExpense(@PathVariable String userId,
                                                  @PathVariable String categoryId,
                                                  @Valid @RequestBody ExpenseDto expenseDto) {
         ExpenseDto addedExpense = expenseService.addExpense(expenseDto, userId, categoryId);
-        return new ResponseEntity<>(addedExpense, HttpStatus.CREATED);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().replacePath("/api/users/{userId}/expenses/{expenseId}")
+                .buildAndExpand(userId, addedExpense.getId()).toUri();
+        return ResponseEntity.created(uri).body(ApiResponse.builder()
+                .success(true)
+                .message("Expense added successfully!")
+                .build());
     }
 
-    @GetMapping("/user/{userId}/expenses")
+    @GetMapping("/{userId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<PaginationResponse<ExpenseDto, Expense>> getAllExpenses(@PathVariable String userId,
                                                                                   @RequestParam(value = "startDate", required = false) String startDateStr,
@@ -56,7 +63,7 @@ public class ExpenseController {
         return new ResponseEntity<>(paginationResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/categories/{categoryId}/expenses")
+    @GetMapping("/{userId}/categories/{categoryId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<PaginationResponse<ExpenseDto, Expense>> getAllExpensesByCategory(@PathVariable String userId,
                                                                                   @PathVariable String categoryId,
@@ -68,7 +75,7 @@ public class ExpenseController {
         return new ResponseEntity<>(allExpensesByCategory, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/month/{month}/year/{year}/expenses")
+    @GetMapping("/{userId}/month/{month}/year/{year}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<Set<ExpenseDto>> getAllExpensesByMonthAndYear(@PathVariable String userId,
                                                                         @PathVariable int month,
@@ -77,14 +84,14 @@ public class ExpenseController {
         return new ResponseEntity<>(allExpensesOfLastMonth, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}/expenses/{expenseId}")
+    @GetMapping("/{userId}/expenses/{expenseId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<ExpenseDto> getSingleExpense(@PathVariable String userId, @PathVariable String expenseId) {
         ExpenseDto expenseById = expenseService.getExpenseById(userId, expenseId);
         return new ResponseEntity<>(expenseById, HttpStatus.OK);
     }
 
-    @PutMapping("/user/{userId}/categories/{categoryId}/expenses/{expenseId}")
+    @PutMapping("/{userId}/categories/{categoryId}/expenses/{expenseId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<ExpenseDto> updateExpense(@PathVariable String userId, @PathVariable String expenseId,
                                                     @PathVariable String categoryId,
@@ -93,7 +100,7 @@ public class ExpenseController {
         return new ResponseEntity<>(updateExpense, HttpStatus.OK);
     }
 
-    @DeleteMapping("/user/{userId}/expenses/{expenseId}")
+    @DeleteMapping("/{userId}/expenses/{expenseId}")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<ApiResponse> deleteExpense(@PathVariable String userId, @PathVariable String expenseId) {
         expenseService.deleteExpense(userId, expenseId);
@@ -101,7 +108,7 @@ public class ExpenseController {
                 HttpStatus.OK);
     }
 
-    @DeleteMapping("/user/{userId}/expenses")
+    @DeleteMapping("/{userId}/expenses")
     @PreAuthorize(value = "@userSecurity.hasUserId(authentication, #userId)")
     public ResponseEntity<ApiResponse> deleteAllExpenses(@PathVariable String userId) {
         expenseService.deleteAllExpenses(userId);

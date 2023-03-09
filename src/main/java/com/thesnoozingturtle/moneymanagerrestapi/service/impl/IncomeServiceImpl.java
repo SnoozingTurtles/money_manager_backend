@@ -1,10 +1,12 @@
 package com.thesnoozingturtle.moneymanagerrestapi.service.impl;
 
 import com.thesnoozingturtle.moneymanagerrestapi.dto.IncomeDto;
+import com.thesnoozingturtle.moneymanagerrestapi.entity.Category;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Income;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.User;
 import com.thesnoozingturtle.moneymanagerrestapi.exception.EntityNotFoundException;
 import com.thesnoozingturtle.moneymanagerrestapi.payload.PaginationResponse;
+import com.thesnoozingturtle.moneymanagerrestapi.repositories.CategoryRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.IncomeRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.ImageService;
@@ -30,54 +32,51 @@ public class IncomeServiceImpl implements IncomeService {
     private final IncomeRepo incomeRepo;
     private final ModelMapper modelMapper;
     private final ImageService imageService;
-    public IncomeServiceImpl(UserRepo userRepo, IncomeRepo incomeRepo, ModelMapper modelMapper, ImageService imageService) {
+    private final CategoryRepo categoryRepo;
+    public IncomeServiceImpl(UserRepo userRepo, IncomeRepo incomeRepo, ModelMapper modelMapper, ImageService imageService, CategoryRepo categoryRepo) {
         this.userRepo = userRepo;
         this.incomeRepo = incomeRepo;
         this.modelMapper = modelMapper;
         this.imageService = imageService;
+        this.categoryRepo = categoryRepo;
     }
     @Override
-    public IncomeDto addIncome(String userId, IncomeDto incomeDto, MultipartFile image) {
+    public IncomeDto addIncome(String userId, String categoryId, IncomeDto incomeDto) {
         User user = getUser(userId);
+        Category category = getCategory(categoryId, user);
         Income income = this.modelMapper.map(incomeDto, Income.class);
         user.setBalance(String.valueOf(Double.parseDouble(user.getBalance()) + Double.parseDouble(income.getAmount())));
         income.setUser(user);
+        income.setCategory(category);
         LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
         income.setDateAdded(ldt);
-        //Uploading image
-        String imageName = imageService.uploadImage(image);
-        income.setImageName(imageName);
         Income savedIncome = this.incomeRepo.save(income);
         this.userRepo.save(user);
         return this.modelMapper.map(savedIncome, IncomeDto.class);
     }
 
     @Override
-    public IncomeDto updateIncome(String userId, String incomeId, IncomeDto incomeDto, MultipartFile image) {
+    public IncomeDto updateIncome(String userId, String incomeId, String categoryId, IncomeDto incomeDto) {
         User user = getUser(userId);
-        try {
-            Income income = getIncome(incomeId, user);
-            //to update the balance in user table
-            double prevIncomeAmount = Double.parseDouble(income.getAmount());
-            double prevBalance = Double.parseDouble(user.getBalance());
-            double newBalance = prevBalance - prevIncomeAmount + Double.parseDouble(incomeDto.getAmount());
-            user.setBalance(String.valueOf(newBalance));
-            this.userRepo.save(user);
+        Category category = getCategory(categoryId, user);
+        Income income = getIncome(incomeId, user);
 
-            income.setAmount(incomeDto.getAmount());
-            income.setDescription(incomeDto.getDescription());
-            income.setType(incomeDto.getType());
-            LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
-            income.setDateAdded(ldt);
-            if (image != null) {
-                String imageName = imageService.uploadImage(image);
-                income.setImageName(imageName);
-            }
-            this.incomeRepo.save(income);
-            return this.modelMapper.map(income, IncomeDto.class);
-        } catch(Exception e) {
-            throw new EntityNotFoundException("No income found for the given ID!");
-        }
+        //to update the balance in user table
+        double prevIncomeAmount = Double.parseDouble(income.getAmount());
+        double prevBalance = Double.parseDouble(user.getBalance());
+        double newBalance = prevBalance - prevIncomeAmount + Double.parseDouble(incomeDto.getAmount());
+        user.setBalance(String.valueOf(newBalance));
+        this.userRepo.save(user);
+
+        income.setCategory(category);
+        income.setAmount(incomeDto.getAmount());
+        income.setDescription(incomeDto.getDescription());
+        income.setType(incomeDto.getType());
+        LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
+        income.setDateAdded(ldt);
+
+        this.incomeRepo.save(income);
+        return this.modelMapper.map(income, IncomeDto.class);
     }
 
     @Override
@@ -92,6 +91,16 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    public PaginationResponse<IncomeDto, Income> getAllIncomesByCategory(String userId, String categoryId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
+        User user = getUser(userId);
+        Category category = getCategory(categoryId, user);
+        Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
+        Page<Income> incomeByUserAndCategory = incomeRepo.getIncomeByUserAndCategory(user, category, pageable);
+        PaginationResponse<IncomeDto, Income> paginationResponse = getPaginationResponse(incomeByUserAndCategory);
+        return paginationResponse;
+    }
+
+    @Override
     public PaginationResponse<IncomeDto, Income> getAllIncomes(String userId, int pageNumber, int pageSize, String sortBy, String sortOrder) {
         User user = getUser(userId);
         Pageable pageable = getPageable(pageNumber, pageSize, sortBy, sortOrder);
@@ -103,12 +112,8 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     public void deleteIncome(String userId, String incomeId) {
         User user = getUser(userId);
-        try {
-            Income incomeById = getIncome(incomeId, user);
-            this.incomeRepo.delete(incomeById);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("No income found for the given ID!");
-        }
+        Income incomeById = getIncome(incomeId, user);
+        this.incomeRepo.delete(incomeById);
     }
 
     @Override
@@ -152,6 +157,14 @@ public class IncomeServiceImpl implements IncomeService {
         User user = this.userRepo.findById(UUID.fromString(userId)).orElseThrow(() -> new EntityNotFoundException("No user exists with the given id!"));
         return user;
     }
+
+    //get the category from categoryId
+    private Category getCategory(String categoryId, User user) {
+        Category category = categoryRepo.findCategoryByIdAndUser(UUID.fromString(categoryId), user)
+                .orElseThrow(() -> new EntityNotFoundException("No such category found!"));
+        return category;
+    }
+
     //Get the Pageable object from parameters
 
     private Pageable getPageable(int pageNumber, int pageSize, String sortBy, String sortOrder) {
