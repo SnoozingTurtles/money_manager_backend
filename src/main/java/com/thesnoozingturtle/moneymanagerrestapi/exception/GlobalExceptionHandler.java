@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,5 +47,19 @@ public class GlobalExceptionHandler {
         String message = refreshTokenException.getMessage();
         ApiResponse apiResponse = new ApiResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.FORBIDDEN);
+    }
+
+    //Catches the file not found exception
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<ApiResponse> fileNotFoundExceptionHandler(FileNotFoundException exception) {
+        String message = exception.getMessage();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(
+                        ApiResponse
+                                .builder()
+                                .success(false)
+                                .message(message)
+                                .build()
+                );
     }
 }

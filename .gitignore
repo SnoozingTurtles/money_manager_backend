@@ -10,6 +10,7 @@ target/
 .git.bfg-report
 bfg-1.14.0.jar
 .env
+/images/
 
 ### STS ###
 .apt_generated

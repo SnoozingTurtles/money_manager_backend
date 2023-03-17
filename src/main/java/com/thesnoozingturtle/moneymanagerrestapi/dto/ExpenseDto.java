@@ -1,9 +1,8 @@
 package com.thesnoozingturtle.moneymanagerrestapi.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
@@ -11,9 +10,9 @@ import javax.validation.constraints.Size;
 import java.util.UUID;
 
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ExpenseDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private UUID id;
@@ -24,6 +23,15 @@ public class ExpenseDto {
     @Pattern(regexp = "^[1-9]\\d*(\\.\\d+)?$", message = "Please enter a valid amount")
     private String amount;
 
+    @JsonIgnore
+    private String imageName;
     @NotEmpty(message = "Date added cannot be empty")
     private String dateAdded;
+
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private UserDto user;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private CategoryDto category;
 }

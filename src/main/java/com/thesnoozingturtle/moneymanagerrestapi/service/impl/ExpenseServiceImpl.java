@@ -80,6 +80,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 //            expenseByIdAndUser.setCategory(expenseDto.getCategory());
             expenseByIdAndUser.setDescription(expenseDto.getDescription());
             expenseByIdAndUser.setType(expenseDto.getType());
+            expenseByIdAndUser.setImageName(expenseDto.getImageName());
             LocalDateTime ldt = LocalDateTime.parse(expenseDto.getDateAdded());
             expenseByIdAndUser.setDateAdded(ldt);
             expenseByIdAndUser.setCategory(category);
@@ -97,12 +98,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public ExpenseDto getExpenseById(String userId, String expenseId) {
         User user = getUser(userId);
-        try {
-            Expense expenseByIdAndUser = getExpense(expenseId, user);
-            return this.modelMapper.map(expenseByIdAndUser, ExpenseDto.class);
-        }  catch (Exception e) {
-            throw new EntityNotFoundException("No expense found for the given ID!");
-        }
+        Expense expenseByIdAndUser = getExpense(expenseId, user);
+        return this.modelMapper.map(expenseByIdAndUser, ExpenseDto.class);
     }
 
     //Method to get all the expenses of a user

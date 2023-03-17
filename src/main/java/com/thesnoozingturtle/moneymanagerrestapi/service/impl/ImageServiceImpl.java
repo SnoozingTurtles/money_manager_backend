@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,9 +43,15 @@ public class ImageServiceImpl implements ImageService {
 
             //Copy the files to the folder
             Files.copy(imageStream, Paths.get(fullPath));
-            return imageName;
+            return newImageName;
         } catch(Exception exception) {
             return null;
         }
+    }
+
+    @Override
+    public InputStream downloadImage(String imageName) throws FileNotFoundException {
+        String fullPath = path + File.separator + imageName;
+        return new FileInputStream(fullPath);
     }
 }

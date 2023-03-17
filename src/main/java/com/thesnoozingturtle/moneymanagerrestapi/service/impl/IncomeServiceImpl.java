@@ -72,6 +72,7 @@ public class IncomeServiceImpl implements IncomeService {
         income.setAmount(incomeDto.getAmount());
         income.setDescription(incomeDto.getDescription());
         income.setType(incomeDto.getType());
+        income.setImageName(incomeDto.getImageName());
         LocalDateTime ldt = LocalDateTime.parse(incomeDto.getDateAdded());
         income.setDateAdded(ldt);
 
@@ -82,12 +83,8 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     public IncomeDto getIncomeById(String userId, String incomeId) {
         User user = getUser(userId);
-        try {
-            Income incomeById = getIncome(incomeId, user);
-            return this.modelMapper.map(incomeById, IncomeDto.class);
-        }  catch (Exception e) {
-            throw new EntityNotFoundException("No income found for the given ID!");
-        }
+        Income incomeById = getIncome(incomeId, user);
+        return this.modelMapper.map(incomeById, IncomeDto.class);
     }
 
     @Override
