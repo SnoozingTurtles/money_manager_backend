@@ -20,6 +20,8 @@
 <p align="center">
   <img src="https://github.com/SnoozingTurtles/money_manager_frontend/blob/development/screenshots/1.png">
   <img src="https://github.com/SnoozingTurtles/money_manager_frontend/blob/development/screenshots/2.png">
+  <img src="https://github.com/SnoozingTurtles/money_manager_backend/blob/master/images/money_manager_swagger-ui1.png">
+  <img src="https://github.com/SnoozingTurtles/money_manager_backend/blob/master/images/money_manager_swagger-ui2.png">
 </p> 
 
 #### Quick Start
