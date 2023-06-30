@@ -3,10 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-/src/main/resources/application-dev.properties
-/src/main/resources/application.properties
-/src/main/resources/application-prod.properties
-/src/main/resources/application.yml
+/src/main/resources/application-dev.yaml
 .git.bfg-report
 bfg-1.14.0.jar
 .env

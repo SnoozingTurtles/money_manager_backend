@@ -1,0 +1,22 @@
+spring:
+  #Datasource
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  #Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+#JWT
+#access token
+jwt:
+  access_token:
+    expirationMs: ${ACCESS_TOKEN_EXPIRATION_MS}
+    secret_key: ${JWT_SECRET_KEY}
+
+#refresh token
+refresh_token:
+  expirationMs: ${REFRESH_TOKEN_EXPIRATION_MS}
