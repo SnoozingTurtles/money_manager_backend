@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -45,6 +46,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to add expense for a particular user
     @Override
+    @Transactional
     public ExpenseDto addExpense(ExpenseDto expenseDto, String userId, String categoryId) {
         User user = getUser(userId);
         Category category = getCategoryByCategoryIdAndUser(categoryId, user);
@@ -62,6 +64,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to update expense for a particular user
     @Override
+    @Transactional
     public ExpenseDto updateExpense(String userId, String expenseId, String categoryId, ExpenseDto expenseDto) {
         User user = getUser(userId);
         Category category = getCategoryByCategoryIdAndUser(categoryId, user);
@@ -123,6 +126,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to delete an expense of a user by expense id
     @Override
+    @Transactional
     public void deleteExpense(String userId, String expenseId) {
         User user = getUser(userId);
         try {
@@ -135,6 +139,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     //Method to delete all the expenses of a user
     @Override
+    @Transactional
     public void deleteAllExpenses(String userId) {
         User user = getUser(userId);
         Set<Expense> expenses = this.expensesRepo.getExpensesByUser(user);

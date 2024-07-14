@@ -19,6 +19,7 @@ public class ImageServiceImpl implements ImageService {
     @Value("${project.image}")
     private String path;
 
+    //TODO: upload to object storage and return the url
     @Override
     public String uploadImage(MultipartFile image) {
         try {

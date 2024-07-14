@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -41,6 +42,7 @@ public class IncomeServiceImpl implements IncomeService {
         this.categoryRepo = categoryRepo;
     }
     @Override
+    @Transactional
     public IncomeDto addIncome(String userId, String categoryId, IncomeDto incomeDto) {
         User user = getUser(userId);
         Category category = getCategory(categoryId, user);
@@ -56,6 +58,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    @Transactional
     public IncomeDto updateIncome(String userId, String incomeId, String categoryId, IncomeDto incomeDto) {
         User user = getUser(userId);
         Category category = getCategory(categoryId, user);
@@ -107,6 +110,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    @Transactional
     public void deleteIncome(String userId, String incomeId) {
         User user = getUser(userId);
         Income incomeById = getIncome(incomeId, user);
@@ -114,6 +118,7 @@ public class IncomeServiceImpl implements IncomeService {
     }
 
     @Override
+    @Transactional
     public void deleteAllIncomes(String userId) {
         User user = getUser(userId);
         Set<Income> incomes = this.incomeRepo.getIncomeByUser(user);

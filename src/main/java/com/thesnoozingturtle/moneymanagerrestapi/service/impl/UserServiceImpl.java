@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto registerNewUser(UserDto userDto) {
         userDto.setBalance("0");
         User user = this.modelMapper.map(userDto, User.class);
@@ -45,6 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto updateUser(String userId, UserDto userDto) {
         User user = getUser(userId);
         user.setEmail(userDto.getEmail());
@@ -69,6 +72,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(String userId) {
         User user = getUser(userId);
         this.userRepo.delete(user);

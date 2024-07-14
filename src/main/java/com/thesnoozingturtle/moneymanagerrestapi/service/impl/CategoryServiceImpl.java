@@ -9,6 +9,7 @@ import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.CategoryService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto, String userId) {
         User user = getUser(userId);
         Category category = modelMapper.map(categoryDto, Category.class);
@@ -54,6 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteCategoryByUserIdAndCategoryId(String userId, String categoryId) {
         User user = getUser(userId);
         categoryRepo.deleteByIdAndUser(UUID.fromString(categoryId), user);

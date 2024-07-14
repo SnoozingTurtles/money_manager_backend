@@ -9,6 +9,7 @@ import com.thesnoozingturtle.moneymanagerrestapi.repositories.UserRepo;
 import com.thesnoozingturtle.moneymanagerrestapi.service.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -34,6 +35,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
+    @Transactional
     public RefreshToken createRefreshToken(String userId) {
         RefreshToken refreshToken = new RefreshToken();
         User user = getUser(userId);
@@ -58,6 +60,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
+    @Transactional
     public int deleteRefreshTokenByUser(String userId) {
         User user = getUser(userId);
         return refreshTokenRepo.deleteByUser(user);
