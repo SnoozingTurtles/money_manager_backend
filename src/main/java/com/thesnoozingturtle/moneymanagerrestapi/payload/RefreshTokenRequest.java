@@ -4,7 +4,7 @@ package com.thesnoozingturtle.moneymanagerrestapi.payload;
 import lombok.Data;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 @Setter

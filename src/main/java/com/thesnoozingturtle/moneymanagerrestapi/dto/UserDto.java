@@ -6,9 +6,9 @@ import com.thesnoozingturtle.moneymanagerrestapi.entity.RefreshToken;
 import com.thesnoozingturtle.moneymanagerrestapi.entity.Role;
 import lombok.*;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

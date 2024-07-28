@@ -1,9 +1,9 @@
 package com.thesnoozingturtle.moneymanagerrestapi.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 @Entity
 @AllArgsConstructor
